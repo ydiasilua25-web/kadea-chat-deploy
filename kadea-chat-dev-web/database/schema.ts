@@ -7,13 +7,121 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class AttachmentSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'messageId', 'mimeType', 'originalName', 'sizeBytes', 'storagePath'] as const
+  $columns = AttachmentSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare messageId: number
+  @column()
+  declare mimeType: string
+  @column()
+  declare originalName: string
+  @column()
+  declare sizeBytes: number
+  @column()
+  declare storagePath: string
+}
+
+export class BlockSchema extends BaseModel {
+  static $columns = ['blockedId', 'blockerId', 'createdAt', 'id'] as const
+  $columns = BlockSchema.$columns
+  @column()
+  declare blockedId: number
+  @column()
+  declare blockerId: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+}
+
+export class ConversationMemberSchema extends BaseModel {
+  static $columns = ['conversationId', 'id', 'joinedAt', 'lastDeliveredMessageId', 'lastReadMessageId', 'role', 'userId'] as const
+  $columns = ConversationMemberSchema.$columns
+  @column()
+  declare conversationId: number
+  @column({ isPrimary: true })
+  declare id: number
+  @column.dateTime()
+  declare joinedAt: DateTime
+  @column()
+  declare lastDeliveredMessageId: number | null
+  @column()
+  declare lastReadMessageId: number | null
+  @column()
+  declare role: string
+  @column()
+  declare userId: number
+}
+
+export class ConversationSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'directKey', 'id', 'name', 'type'] as const
+  $columns = ConversationSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: number
+  @column()
+  declare directKey: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare name: string | null
+  @column()
+  declare type: string
+}
+
+export class EmailTokenSchema extends BaseModel {
+  static $columns = ['createdAt', 'expiresAt', 'id', 'tokenHash', 'type', 'usedAt', 'userId'] as const
+  $columns = EmailTokenSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare tokenHash: string
+  @column()
+  declare type: string
+  @column.dateTime()
+  declare usedAt: DateTime | null
+  @column()
+  declare userId: number
+}
+
+export class MessageSchema extends BaseModel {
+  static $columns = ['content', 'conversationId', 'createdAt', 'deletedAt', 'id', 'userId'] as const
+  $columns = MessageSchema.$columns
+  @column()
+  declare content: string | null
+  @column()
+  declare conversationId: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare userId: number
+}
+
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'updatedAt'] as const
+  static $columns = ['avatarPath', 'createdAt', 'email', 'emailVerifiedAt', 'fullName', 'id', 'password', 'updatedAt'] as const
   $columns = UserSchema.$columns
+  @column()
+  declare avatarPath: string | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column()
   declare email: string
+  @column.dateTime()
+  declare emailVerifiedAt: DateTime | null
   @column()
   declare fullName: string | null
   @column({ isPrimary: true })

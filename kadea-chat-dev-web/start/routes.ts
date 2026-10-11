@@ -10,6 +10,7 @@
 import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
+import mail from '@adonisjs/mail/services/main'
 
 router.on('/').render('pages/home').as('home')
 
@@ -29,3 +30,15 @@ router
     router.post('logout', [controllers.Session, 'destroy'])
   })
   .use(middleware.auth())
+
+
+router.get('/test-email', async () => {
+  await mail.send((message) => {
+    message
+      .to('omer.sporer@ethereal.email')
+      .subject('Test AdonisJS')
+      .text('Bonjour ! Ceci est mon premier e-mail envoyé avec AdonisJS.')
+  })
+
+  return 'E-mail envoyé avec succès !'
+})
