@@ -1,0 +1,26 @@
+@layouts.auth()
+  <h1 class="auth__title">Vérifie ta boîte mail</h1>
+  <p class="auth__sub">Nous t'avons envoyé un lien de confirmation. Clique dessus pour activer ton compte.</p>
+
+  @if(flashMessages.has('success'))
+    <p style="color: #15803d;">{{ flashMessages.get('success') }}</p>
+  @end
+  @if(flashMessages.has('error'))
+    <p style="color: #b91c1c;">{{ flashMessages.get('error') }}</p>
+  @end
+
+  @form({ route: 'verify_email.resend', method: 'POST', class: 'auth__form' })
+    @field.root({ name: 'email' })
+      @!field.label({ text: 'Email' })
+      @!input.control({ type: 'email', autocomplete: 'email', placeholder: 'you@example.com' })
+      @!field.error()
+    @end
+    @!button({ text: "Renvoyer l'e-mail", type: 'submit', block: true })
+  @end
+
+  <p class="auth__foot">
+    @link({ route: 'session.create', class: 'il' })
+      Retour à la connexion
+    @end
+  </p>
+@end

@@ -1,6 +1,14 @@
 @layouts.auth()
   <h1 class="auth__title">Welcome back</h1>
   <p class="auth__sub">Sign in to continue building.</p>
+
+    @if(flashMessages.has('success'))
+    <p style="color: #15803d;">{{ flashMessages.get('success') }}</p>
+  @end
+  @if(flashMessages.has('error'))
+    <p style="color: #b91c1c;">{{ flashMessages.get('error') }}</p>
+  @end
+  
   @form({
     route: 'session.store',
     method: 'POST',

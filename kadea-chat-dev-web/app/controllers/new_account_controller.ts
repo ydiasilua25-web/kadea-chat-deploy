@@ -1,28 +1,27 @@
 import User from '#models/user'
+import EmailTokenService from '#services/email_token_service'
 import { signupValidator } from '#validators/user'
 import type { HttpContext } from '@adonisjs/core/http'
 
-/**
- * NewAccountController handles user registration.
- * It provides methods for displaying the signup page and creating
- * new user accounts.
- */
 export default class NewAccountController {
-  /**
-   * Display the signup page
-   */
   async create({ view }: HttpContext) {
     return view.render('pages/auth/signup')
   }
 
   /**
-   * Create a new user account and authenticate the user
+   * Crée le compte (non confirmé) et envoie l'e-mail de confirmation.
+   * L'utilisateur n'est PAS connecté : il doit d'abord confirmer son adresse.
    */
-  async store({ request, response, auth }: HttpContext) {
+  async store({ request, response, logger }: HttpContext) {
     const { fullName, email, password } = await request.validateUsing(signupValidator)
     const user = await User.create({ fullName, email, password })
 
-    await auth.use('web').login(user)
-    response.redirect().toRoute('dashboard')
+    try {
+      await new EmailTokenService().sendVerificationEmail(user)
+    } catch (error) {
+      logger.error({ err: error }, "Échec de l'envoi de l'e-mail de confirmation")
+    }
+
+    response.redirect().toRoute('verify_email.notice')
   }
 }
