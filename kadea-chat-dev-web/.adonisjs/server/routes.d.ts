@@ -14,6 +14,10 @@ export type ScannedRoutes = {
     'verify_email.notice': { paramsTuple?: []; params?: {} }
     'verify_email.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'verify_email.resend': { paramsTuple?: []; params?: {} }
+    'forgot_password.create': { paramsTuple?: []; params?: {} }
+    'forgot_password.store': { paramsTuple?: []; params?: {} }
+    'reset_password.create': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'reset_password.store': { paramsTuple?: []; params?: {} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
@@ -22,6 +26,8 @@ export type ScannedRoutes = {
     'dashboard': { paramsTuple?: []; params?: {} }
     'verify_email.notice': { paramsTuple?: []; params?: {} }
     'verify_email.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'forgot_password.create': { paramsTuple?: []; params?: {} }
+    'reset_password.create': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
@@ -30,12 +36,16 @@ export type ScannedRoutes = {
     'dashboard': { paramsTuple?: []; params?: {} }
     'verify_email.notice': { paramsTuple?: []; params?: {} }
     'verify_email.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'forgot_password.create': { paramsTuple?: []; params?: {} }
+    'reset_password.create': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
   }
   POST: {
     'new_account.store': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
     'verify_email.resend': { paramsTuple?: []; params?: {} }
+    'forgot_password.store': { paramsTuple?: []; params?: {} }
+    'reset_password.store': { paramsTuple?: []; params?: {} }
   }
 }
 declare module '@adonisjs/core/types/http' {

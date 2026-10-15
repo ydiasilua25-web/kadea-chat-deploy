@@ -87,4 +87,39 @@ export default class EmailTokenService {
         .text(`Bienvenue sur Kadea Chat ! Confirme ton adresse e-mail : ${url}`)
     })
   }
+
+    /**
+   * Crée un jeton de réinitialisation et envoie l'e-mail.
+   */
+  async sendPasswordResetEmail(user: User) {
+    const token = await this.create(user, 'reset_password')
+    const url = env.get('APP_URL') + router.makeUrl('reset_password.create', { token })
+
+    await mail.send((message) => {
+      message
+        .to(user.email)
+        .subject('Réinitialise ton mot de passe - Kadea Chat')
+        .htmlView('emails/reset_password', { user, url })
+        .text(`Pour choisir un nouveau mot de passe, ouvre ce lien (valable 1 heure) : ${url}`)
+    })
+  }
+
+  /**
+   * Change le mot de passe et marque le jeton utilisé, ensemble ou pas du tout.
+   */
+  async resetPassword(record: EmailToken, newPassword: string) {
+    await db.transaction(async (trx) => {
+      record.useTransaction(trx)
+      record.user.useTransaction(trx)
+
+      record.usedAt = DateTime.now()
+      record.user.password = newPassword
+      if (record.user.emailVerifiedAt === null) {
+        record.user.emailVerifiedAt = DateTime.now()
+      }
+
+      await record.save()
+      await record.user.save()
+    })
+  }
 }

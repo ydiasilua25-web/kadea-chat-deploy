@@ -28,3 +28,13 @@ export const loginValidator = vine.create({
 export const resendVerificationValidator = vine.create({
   email: email(),
 })
+
+export const forgotPasswordValidator = vine.create({
+  email: email(),
+})
+
+export const resetPasswordValidator = vine.create({
+  token: vine.string(),
+  password: password(),
+  passwordConfirmation: password().sameAs('password'),
+})

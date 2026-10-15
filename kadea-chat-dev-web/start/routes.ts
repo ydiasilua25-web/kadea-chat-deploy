@@ -33,3 +33,8 @@ router
 router.get('verify-email', [controllers.VerifyEmail, 'notice'])
 router.get('verify-email/:token', [controllers.VerifyEmail, 'show'])
 router.post('verify-email/resend', [controllers.VerifyEmail, 'resend'])
+
+router.get('forgot-password', [controllers.ForgotPassword, 'create'])
+router.post('forgot-password', [controllers.ForgotPassword, 'store'])
+router.get('reset-password/:token', [controllers.ResetPassword, 'create'])
+router.post('reset-password', [controllers.ResetPassword, 'store'])
