@@ -11,7 +11,14 @@ import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
 
-router.on('/').render('pages/home').as('home')
+router
+  .get('/', async ({ auth, response }) => {
+    if (await auth.use('web').check()) {
+      return response.redirect().toRoute('dashboard')
+    }
+    return response.redirect().toRoute('session.create')
+  })
+  .as('home')
 
 router
   .group(() => {

@@ -1,14 +1,7 @@
 @layouts.auth()
-  <h1 class="auth__title">Welcome back</h1>
-  <p class="auth__sub">Sign in to continue building.</p>
+  <h1 class="auth__title">Content de te revoir</h1>
+  <p class="auth__sub">Connecte-toi pour retrouver tes conversations.</p>
 
-    @if(flashMessages.has('success'))
-    <p style="color: #15803d;">{{ flashMessages.get('success') }}</p>
-  @end
-  @if(flashMessages.has('error'))
-    <p style="color: #b91c1c;">{{ flashMessages.get('error') }}</p>
-  @end
-  
   @form({
     route: 'session.store',
     method: 'POST',
@@ -17,16 +10,16 @@
     'x-on:submit': 'submitting = true',
   })
     @field.root({ name: 'email' })
-      @!field.label({ text: 'Email' })
+      @!field.label({ text: 'Adresse e-mail' })
       @!input.control({
         type: 'email',
         autocomplete: 'username',
-        placeholder: 'you@example.com',
+        placeholder: 'toi@exemple.com',
       })
       @!field.error()
     @end
     @field.root({ name: 'password' })
-      @!field.label({ text: 'Password' })
+      @!field.label({ text: 'Mot de passe' })
       @!input.control({
         type: 'password',
         autocomplete: 'current-password',
@@ -35,23 +28,19 @@
       @!field.error()
     @end
     @!button({
-      text: 'Sign in',
+      text: 'Se connecter',
       type: 'submit',
       block: true,
       style: 'margin-top: 4px;',
       'x-bind:disabled': 'submitting',
-      'x-text': "submitting ? 'One moment…' : 'Sign in'",
+      'x-text': "submitting ? 'Un instant…' : 'Se connecter'",
     })
   @end
 
   <p class="auth__foot">
-    
-
-    New here?
-
-
+    Nouveau ici ?
     @link({ route: 'new_account.create', class: 'il' })
-      Create an account
+      Créer un compte
     @end
   </p>
 

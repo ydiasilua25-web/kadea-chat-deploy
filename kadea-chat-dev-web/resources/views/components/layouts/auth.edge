@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html
-  lang="en-us"
+  lang="fr"
   data-theme="{{
     request.plainCookie('app_theme', {
       defaultValue: 'light',
@@ -11,7 +11,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AdonisJS — Starter Kit</title>
+    <title>Kadea Chat</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('dumper')
   </head>
@@ -23,26 +23,31 @@
         <div style="height: 20px;"></div>
       </div>
 
-      <aside class="auth__aside">
+      <aside class="auth__aside bg-encre text-white">
         <div class="auth__aside-top">
           @!themeToggle()
         </div>
 
-        <p class="auth__quote">Auth, kept intentionally minimal so you can build it your way.</p>
+        <div class="flex max-w-sm flex-col gap-3" aria-hidden="true">
+          <p class="self-start rounded-2xl rounded-bl-sm bg-white/10 px-4 py-2.5 text-[15px]">
+            On révise ensemble ce soir ?
+          </p>
+          <p class="self-end rounded-2xl rounded-br-sm bg-hibiscus px-4 py-2.5 text-[15px]">
+            Oui, je prépare mes questions.
+          </p>
+          <p class="self-start rounded-2xl rounded-bl-sm bg-white/10 px-4 py-2.5 text-[15px]">
+            Parfait, j'envoie le lien du groupe.
+          </p>
+          <span class="self-end text-xs text-menthe">Lu</span>
+        </div>
 
         <div>
-          <div class="pitch__t">Looking for production-ready auth?</div>
-          <p class="pitch__p">
-            Check out Feature packs, production-ready full-stack components from the creator of AdonisJS.
+          <p class="max-w-[22ch] font-display text-2xl leading-tight">
+            Les échanges de ta classe, au même endroit.
           </p>
-          <a
-            class="il pitch__a"
-            href="https://plus.adonisjs.com/feature-packs"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Explore Feature packs →
-          </a>
+          <p class="mt-2 max-w-[36ch] text-sm text-white/70">
+            Messages privés, groupes de travail, et ton historique retrouvé à chaque connexion.
+          </p>
         </div>
       </aside>
     </div>
