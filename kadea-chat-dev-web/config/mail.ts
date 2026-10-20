@@ -22,7 +22,7 @@ const mailConfig = defineConfig({
    * the brand name to be used within the emails
    */
   globals: {
-    brandName: 'Acme'
+    brandName: 'kadea-chat-dev-web',
   },
 
   /**
@@ -31,18 +31,13 @@ const mailConfig = defineConfig({
    * options.
    */
   mailers: { 
-    smtp: transports.smtp({
-      host: env.get('SMTP_HOST'),
-      port: env.get('SMTP_PORT'),
+    brevo: transports.brevo({
+    key: env.get('BREVO_API_KEY'),
+    baseUrl: 'https://api.brevo.com/v3',
 			/**
        * Uncomment the auth block if your SMTP
        * server needs authentication
        */
-        auth: {
-        type: 'login',
-        user: env.get('SMTP_USERNAME'),
-        pass: env.get('SMTP_PASSWORD'),
-      }, 
     }),
 		      
   },
