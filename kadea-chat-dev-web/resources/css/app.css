@@ -1,6 +1,5 @@
 @layer theme, base, components, utilities;
 
-@import '@fontsource-variable/bricolage-grotesque';
 @import '@fontsource-variable/instrument-sans';
 @import 'tailwindcss/theme.css' layer(theme);
 @import './kit.css' layer(components);
@@ -11,12 +10,74 @@
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 @theme static {
-  --color-encre: #16213a;
-  --color-brume: #eef1f6;
-  --color-hibiscus: #d6336c;
-  --color-menthe: #1f9d6b;
-  --color-ardoise: #5b667a;
-  --color-brique: #b3261e;
-  --font-display: 'Bricolage Grotesque Variable', 'Instrument Sans Variable', sans-serif;
   --font-sans: 'Instrument Sans Variable', system-ui, sans-serif;
+  --font-display: 'Instrument Sans Variable', system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* Les couleurs lisent les variables : elles changent toutes seules en mode sombre */
+@theme inline {
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-panel: var(--panel);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-pine: var(--btn);
+  --color-pine-fg: var(--btn-fg);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  section[id] {
+    scroll-margin-top: 90px;
+  }
+}
+
+@layer components {
+  .lp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 3rem;
+    padding: 0 1.4rem;
+    border-radius: 0.9rem;
+    font-weight: 500;
+    background: var(--btn);
+    color: var(--btn-fg);
+    box-shadow: 0 12px 26px -14px color-mix(in oklab, var(--btn) 80%, transparent);
+    transition:
+      opacity 0.15s,
+      transform 0.15s;
+  }
+  .lp-btn:hover {
+    opacity: 0.9;
+  }
+  .lp-btn:active {
+    transform: scale(0.97);
+  }
+  .lp-btn--soft {
+    height: 2.6rem;
+    padding: 0 1.1rem;
+    font-size: 0.9rem;
+    background: var(--card);
+    color: var(--ink);
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.06),
+      0 10px 22px -14px rgb(0 0 0 / 0.3);
+  }
+  .lp-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--subtle);
+  }
 }

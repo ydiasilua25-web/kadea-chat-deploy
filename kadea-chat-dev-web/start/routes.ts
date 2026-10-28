@@ -12,11 +12,11 @@ import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
 
 router
-  .get('/', async ({ auth, response }) => {
+  .get('/', async ({ auth, response, view }) => {
     if (await auth.use('web').check()) {
       return response.redirect().toRoute('dashboard')
     }
-    return response.redirect().toRoute('session.create')
+    return view.render('pages/home')
   })
   .as('home')
 

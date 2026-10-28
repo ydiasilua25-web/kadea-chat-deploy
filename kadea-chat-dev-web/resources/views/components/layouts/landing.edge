@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html
+  lang="fr"
+  data-theme="{{
+    request.plainCookie('app_theme', {
+      defaultValue: 'light',
+      encoded: false,
+    })
+  }}"
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kadea Chat — la messagerie de ta classe</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+  </head>
+  <body class="bg-paper text-ink antialiased">
+    <header class="sticky top-0 z-30 border-b border-line bg-paper/85 backdrop-blur">
+      <div class="mx-auto flex h-[72px] max-w-[1180px] items-center justify-between px-6 md:px-10">
+      <a href="/" aria-label="Kadea Chat, accueil">
+        @!logo()
+      </a>
+
+        <nav class="hidden items-center gap-9 text-[15px] text-muted md:flex" aria-label="Sections">
+          <a class="transition hover:text-ink" href="#fonctionnalites">Fonctionnalités</a>
+          <a class="transition hover:text-ink" href="#comment-ca-marche">Comment ça marche</a>
+          <a class="transition hover:text-ink" href="#faq">FAQ</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+          @!themeToggle()
+          <a class="lp-btn lp-btn--soft" href="/login">Se connecter</a>
+        </div>
+      </div>
+    </header>
+
+    {{{ await $slots.main() }}}
+
+    @include('partials/flash_alerts')
+  </body>
+</html>

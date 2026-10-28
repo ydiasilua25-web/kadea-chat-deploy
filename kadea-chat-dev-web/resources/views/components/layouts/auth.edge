@@ -18,34 +18,37 @@
   <body>
     <div class="auth">
       <div class="auth__form-col">
-        @!logo({ size: 28 })
+        <div class="flex items-center justify-between">
+          <a href="/" aria-label="Kadea Chat, accueil">
+            @!logo()
+          </a>
+          @!themeToggle()
+        </div>
         <div class="auth__form-wrap">{{{ await $slots.main() }}}</div>
         <div style="height: 20px;"></div>
       </div>
 
-      <aside class="auth__aside bg-encre text-white">
-        <div class="auth__aside-top">
-          @!themeToggle()
-        </div>
+      <aside class="auth__aside bg-panel">
+        <div></div>
 
         <div class="flex max-w-sm flex-col gap-3" aria-hidden="true">
-          <p class="self-start rounded-2xl rounded-bl-sm bg-white/10 px-4 py-2.5 text-[15px]">
+          <p class="self-start rounded-2xl rounded-bl-md bg-card px-4 py-2.5 text-[15px] shadow-sm">
             On révise ensemble ce soir ?
           </p>
-          <p class="self-end rounded-2xl rounded-br-sm bg-hibiscus px-4 py-2.5 text-[15px]">
+          <p class="self-end rounded-2xl rounded-br-md bg-pine px-4 py-2.5 text-[15px] text-pine-fg">
             Oui, je prépare mes questions.
           </p>
-          <p class="self-start rounded-2xl rounded-bl-sm bg-white/10 px-4 py-2.5 text-[15px]">
-            Parfait, j'envoie le lien du groupe.
+          <p class="self-start rounded-2xl rounded-bl-md bg-card px-4 py-2.5 text-[15px] shadow-sm">
+            Parfait, j’envoie le lien du groupe.
           </p>
-          <span class="self-end text-xs text-menthe">Lu</span>
+          <span class="self-end text-xs text-accent-ink">Lu</span>
         </div>
 
         <div>
-          <p class="max-w-[22ch] font-display text-2xl leading-tight">
+          <p class="max-w-[22ch] text-2xl font-medium leading-tight tracking-tight">
             Les échanges de ta classe, au même endroit.
           </p>
-          <p class="mt-2 max-w-[36ch] text-sm text-white/70">
+          <p class="mt-2 max-w-[36ch] text-sm text-muted">
             Messages privés, groupes de travail, et ton historique retrouvé à chaque connexion.
           </p>
         </div>

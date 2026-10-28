@@ -5,42 +5,50 @@
 
 :root {
   --sans: 'Instrument Sans Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --display: 'Bricolage Grotesque Variable', 'Instrument Sans Variable', sans-serif;
+  --display: 'Instrument Sans Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
 
-  --paper: var(--color-brume);
-  --card: #ffffff;
-  --ink: var(--color-encre);
-  --ink-2: #2d3855;
-  --muted: var(--color-ardoise);
-  --subtle: #8f9ab0;
-  --line: #e3e8f0;
-  --line-2: #d3dae6;
-  --btn: var(--color-hibiscus);
+  --paper: #efefed;
+  --card: #f8f8f6;
+  --panel: #e7e7e4;
+  --ink: #141414;
+  --ink-2: #2c2c2a;
+  --muted: #6b6b66;
+  --subtle: #8f8f89;
+  --line: #e0e0dc;
+  --line-2: #d2d2cd;
+  --btn: #13403a;
   --btn-fg: #ffffff;
-  --ring: rgba(214, 51, 108, 0.22);
-  --field: #ffffff;
-  --ok: var(--color-menthe);
+  --ring: rgba(19, 64, 58, 0.22);
+  --field: #fbfbfa;
+  --ok: #0f7a68;
+  --accent: #17a58d;
+  --accent-soft: #dcefe9;
+  --accent-ink: #0f5c4d;
 
-  --r: 8px;
-  --r-lg: 14px;
+  --r: 12px;
+  --r-lg: 20px;
   color-scheme: light;
 }
 
 :root[data-theme='dark'] {
-  --paper: #0d1424;
-  --card: #141d33;
-  --ink: #eef1f6;
-  --ink-2: #c9d1e0;
-  --muted: #98a3b8;
-  --subtle: #66718a;
-  --line: #1f2a45;
-  --line-2: #2b3858;
-  --btn: var(--color-hibiscus);
-  --btn-fg: #ffffff;
-  --ring: rgba(214, 51, 108, 0.3);
-  --field: #0f1730;
+  --paper: #0f0f0f;
+  --card: #181818;
+  --panel: #151515;
+  --ink: #ececea;
+  --ink-2: #c8c8c4;
+  --muted: #9a9a95;
+  --subtle: #70706b;
+  --line: #242424;
+  --line-2: #303030;
+  --btn: #ecebe6;
+  --btn-fg: #111111;
+  --ring: rgba(236, 235, 230, 0.2);
+  --field: #121212;
   --ok: #3ecf8e;
+  --accent: #22b79d;
+  --accent-soft: #12332d;
+  --accent-ink: #7fe0cb;
   color-scheme: dark;
 }
 
@@ -924,3 +932,40 @@ input {
     padding: 20px;
   }
 }
+/* --- Responsive : formulaires d'authentification --- */
+@media (min-width: 881px) and (max-width: 1100px) {
+  .auth__form-col {
+    padding: 26px 24px;
+  }
+  .auth__aside {
+    padding: 32px 28px;
+  }
+}
+@media (max-width: 880px) {
+  .auth__form-col {
+    padding: 24px 22px;
+  }
+  .auth__form-wrap {
+    max-width: 440px;
+  }
+}
+@media (max-width: 480px) {
+  .auth__form-col {
+    padding: 18px 16px;
+  }
+  .auth__title {
+    font-size: 25px;
+  }
+  .field__input {
+    height: 48px;
+    font-size: 16px;
+  }
+  .btn {
+    height: 48px;
+    font-size: 15px;
+  }
+  .alert {
+    max-width: calc(100% - 24px);
+  }
+}
+
