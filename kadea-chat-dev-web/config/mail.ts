@@ -2,7 +2,7 @@ import env from '#start/env'
 import { defineConfig, transports } from '@adonisjs/mail'
 
 const mailConfig = defineConfig({
-  default: env.get('MAIL_MAILER'),
+  default: 'brevo',
 
   /**
    * The mailers object can be used to configure multiple mailers
@@ -22,7 +22,7 @@ const mailConfig = defineConfig({
    * the brand name to be used within the emails
    */
   globals: {
-    brandName: 'kadea-chat-dev-web',
+    brandName: 'kadea chat',
   },
 
   /**

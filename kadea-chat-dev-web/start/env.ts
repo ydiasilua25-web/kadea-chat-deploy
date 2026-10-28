@@ -8,7 +8,6 @@
 | to JavaScript data types.
 |
 */
-
 import { Env } from '@adonisjs/core/env'
 
 export default await Env.create(new URL('../', import.meta.url), {
@@ -42,9 +41,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   | Variables for configuring the mail package
   |----------------------------------------------------------
   */
-  MAIL_MAILER: Env.schema.enum(['brevo'] as const),
   MAIL_FROM_NAME: Env.schema.string(),
   MAIL_FROM_ADDRESS: Env.schema.string(),
   BREVO_API_KEY: Env.schema.string(),
-  SMTP_PASSWORD: Env.schema.string()
 })
