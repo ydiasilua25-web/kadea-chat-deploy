@@ -32,7 +32,7 @@ router
 
 router
   .group(() => {
-    router.on('/dashboard').render('pages/dashboard').as('dashboard')
+    router.get('/dashboard', ({ response }) => response.redirect('/chat')).as('dashboard')
     router.post('logout', [controllers.Session, 'destroy'])
   })
   .use(middleware.auth())
@@ -45,3 +45,21 @@ router.get('forgot-password', [controllers.ForgotPassword, 'create'])
 router.post('forgot-password', [controllers.ForgotPassword, 'store'])
 router.get('reset-password/:token', [controllers.ResetPassword, 'create'])
 router.post('reset-password', [controllers.ResetPassword, 'store'])
+
+router
+  .group(() => {
+    router.get('chat', [controllers.Conversations, 'index'])
+    router.get('chat/new', [controllers.Conversations, 'create'])
+    router.post('chat', [controllers.Conversations, 'store'])
+    router
+      .get('chat/:id', [controllers.Conversations, 'show'])
+      .where('id', router.matchers.number())
+    router
+      .post('chat/:id/messages', [controllers.Messages, 'store'])
+      .where('id', router.matchers.number())
+    router
+      .post('chat/:id/messages/:messageId/delete', [controllers.Messages, 'destroy'])
+      .where('id', router.matchers.number())
+      .where('messageId', router.matchers.number())
+  })
+  .use(middleware.auth())

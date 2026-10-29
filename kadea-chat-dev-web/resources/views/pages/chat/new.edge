@@ -1,0 +1,47 @@
+@layouts.chat()
+  <div class="flex h-dvh w-full">
+    @include('partials/chat/sidebar')
+
+    <main class="flex min-w-0 flex-1 flex-col bg-paper">
+      <header class="flex items-center gap-3 border-b border-line bg-card px-4 py-3 md:px-6">
+        <a href="/chat" aria-label="Retour aux conversations" class="grid size-10 place-items-center rounded-full text-muted hover:bg-panel md:hidden">
+          @svg('lucide:arrow-left', { width: 20, height: 20 })
+        </a>
+        <h1 class="text-lg font-medium">Nouvelle conversation</h1>
+      </header>
+
+      <div class="mx-auto w-full max-w-xl flex-1 overflow-y-auto px-4 py-6">
+        <form method="GET" action="/chat/new" class="flex gap-2">
+          <input
+            type="search"
+            name="q"
+            value="{{ term }}"
+            minlength="2"
+            placeholder="Rechercher par nom ou adresse e-mail"
+            class="h-12 min-w-0 flex-1 rounded-full bg-card px-5 text-base outline-none ring-1 ring-line-2 focus:ring-2 focus:ring-accent"
+          />
+          <button type="submit" class="lp-btn h-12">Chercher</button>
+        </form>
+
+        @if(term.length >= 2 && users.length === 0)
+          <p class="mt-6 text-sm text-muted">Aucun utilisateur trouvé pour « {{ term }} ».</p>
+        @end
+
+        <div class="mt-6 flex flex-col gap-3">
+          @each(user in users)
+            <form method="POST" action="/chat" class="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-sm">
+              {{ csrfField() }}
+              <input type="hidden" name="userId" value="{{ user.id }}" />
+              <span class="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ user.initials }}</span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate font-medium">{{ user.fullName }}</span>
+                <span class="block truncate text-sm text-muted">{{ user.email }}</span>
+              </span>
+              <button type="submit" class="lp-btn lp-btn--soft">Écrire</button>
+            </form>
+          @end
+        </div>
+      </div>
+    </main>
+  </div>
+@end

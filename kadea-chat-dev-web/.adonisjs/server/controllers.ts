@@ -4,7 +4,9 @@
  */
 
 export const controllers = {
+  Conversations: () => import('#controllers/conversations_controller'),
   ForgotPassword: () => import('#controllers/forgot_password_controller'),
+  Messages: () => import('#controllers/messages_controller'),
   NewAccount: () => import('#controllers/new_account_controller'),
   ResetPassword: () => import('#controllers/reset_password_controller'),
   Session: () => import('#controllers/session_controller'),

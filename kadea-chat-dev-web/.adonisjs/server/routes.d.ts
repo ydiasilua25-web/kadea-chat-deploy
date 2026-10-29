@@ -18,6 +18,12 @@ export type ScannedRoutes = {
     'forgot_password.store': { paramsTuple?: []; params?: {} }
     'reset_password.create': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'reset_password.store': { paramsTuple?: []; params?: {} }
+    'conversations.index': { paramsTuple?: []; params?: {} }
+    'conversations.create': { paramsTuple?: []; params?: {} }
+    'conversations.store': { paramsTuple?: []; params?: {} }
+    'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'messages.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'messages.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
@@ -28,6 +34,9 @@ export type ScannedRoutes = {
     'verify_email.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'forgot_password.create': { paramsTuple?: []; params?: {} }
     'reset_password.create': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'conversations.index': { paramsTuple?: []; params?: {} }
+    'conversations.create': { paramsTuple?: []; params?: {} }
+    'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
@@ -38,6 +47,9 @@ export type ScannedRoutes = {
     'verify_email.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'forgot_password.create': { paramsTuple?: []; params?: {} }
     'reset_password.create': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'conversations.index': { paramsTuple?: []; params?: {} }
+    'conversations.create': { paramsTuple?: []; params?: {} }
+    'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   POST: {
     'new_account.store': { paramsTuple?: []; params?: {} }
@@ -46,6 +58,9 @@ export type ScannedRoutes = {
     'verify_email.resend': { paramsTuple?: []; params?: {} }
     'forgot_password.store': { paramsTuple?: []; params?: {} }
     'reset_password.store': { paramsTuple?: []; params?: {} }
+    'conversations.store': { paramsTuple?: []; params?: {} }
+    'messages.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'messages.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

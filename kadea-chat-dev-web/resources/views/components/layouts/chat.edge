@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html
+  lang="fr"
+  data-theme="{{
+    request.plainCookie('app_theme', {
+      defaultValue: 'light',
+      encoded: false,
+    })
+  }}"
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Kadea Chat</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+  </head>
+  <body class="h-dvh overflow-hidden bg-paper text-ink antialiased">
+    {{{ await $slots.main() }}}
+    @include('partials/flash_alerts')
+  </body>
+</html>
