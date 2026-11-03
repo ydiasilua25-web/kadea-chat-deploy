@@ -4,6 +4,7 @@ import transmit from '@adonisjs/transmit/services/main'
 import Conversation from '#models/conversation'
 import ConversationMember from '#models/conversation_member'
 import Message from '#models/message'
+import MessageHide from '#models/message_hide'
 import User from '#models/user'
 
 /** Fuseau d'affichage des heures. À changer ici si besoin. */
@@ -15,12 +16,10 @@ function initialsOf(text: string) {
 }
 
 export default class ConversationService {
-  /** Clé unique d'une conversation privée : le plus petit identifiant toujours en premier. */
   private directKey(a: number, b: number) {
     return a < b ? `${a}:${b}` : `${b}:${a}`
   }
 
-  /** Retrouve ou crée la conversation privée entre deux utilisateurs. */
   async findOrCreatePrivate(me: User, other: User) {
     const key = this.directKey(me.id, other.id)
 
@@ -49,7 +48,6 @@ export default class ConversationService {
     }
   }
 
-  /** La conversation si l'utilisateur en est membre, sinon une erreur 404. */
   async findForMember(user: User, conversationId: number) {
     return Conversation.query()
       .where('id', conversationId)
@@ -57,7 +55,7 @@ export default class ConversationService {
       .firstOrFail()
   }
 
-  /** La liste affichée dans la colonne de gauche, la plus récente en premier. */
+  /** La liste de gauche : le dernier message VISIBLE par l'utilisateur. */
   async listFor(user: User) {
     const conversations = await Conversation.query()
       .whereHas('members', (query) => query.where('userId', user.id))
@@ -67,6 +65,9 @@ export default class ConversationService {
       conversations.map(async (conversation) => {
         const last = await Message.query()
           .where('conversationId', conversation.id)
+          .whereNotIn('id', (hidden) => {
+            hidden.from('message_hides').where('user_id', user.id).select('message_id')
+          })
           .orderBy('id', 'desc')
           .first()
 
@@ -100,7 +101,7 @@ export default class ConversationService {
     return items.sort((a, b) => b.sortKey - a.sortKey)
   }
 
-  /** Un message prêt à être affiché (le message doit avoir son auteur chargé). */
+  /** Un message prêt à être affiché (l'auteur doit être chargé). */
   presentMessage(message: Message) {
     return {
       id: message.id,
@@ -109,14 +110,18 @@ export default class ConversationService {
       authorName: message.author.fullName ?? message.author.email,
       content: message.content,
       isDeleted: Boolean(message.deletedAt),
+      isEdited: Boolean(message.editedAt),
       time: message.createdAt.setZone(APP_ZONE).toFormat('HH:mm'),
     }
   }
 
-  /** Les 200 derniers messages, du plus ancien au plus récent. */
-  async messagesOf(conversation: Conversation) {
+  /** Les 200 derniers messages que l'utilisateur n'a pas cachés. */
+  async messagesOf(conversation: Conversation, user: User) {
     const rows = await Message.query()
       .where('conversationId', conversation.id)
+      .whereNotIn('id', (hidden) => {
+        hidden.from('message_hides').where('user_id', user.id).select('message_id')
+      })
       .preload('author')
       .orderBy('id', 'desc')
       .limit(200)
@@ -124,7 +129,6 @@ export default class ConversationService {
     return rows.reverse().map((message) => this.presentMessage(message))
   }
 
-  /** Un message de cette conversation, ou une erreur 404. */
   async findMessage(conversation: Conversation, messageId: number) {
     const message = await Message.query()
       .where('id', messageId)
@@ -135,7 +139,16 @@ export default class ConversationService {
     return this.presentMessage(message)
   }
 
-  /** Prévient en temps réel tous les membres : un message a été créé ou modifié. */
+  /** « Supprimer pour moi » : le message disparaît seulement pour cet utilisateur. */
+  async hideFor(user: User, conversation: Conversation, messageId: number) {
+    const message = await Message.query()
+      .where('id', messageId)
+      .where('conversationId', conversation.id)
+      .firstOrFail()
+
+    await MessageHide.firstOrCreate({ messageId: message.id, userId: user.id })
+  }
+
   async notifyMembers(conversationId: number, messageId: number) {
     const members = await ConversationMember.query().where('conversationId', conversationId)
     for (const member of members) {
@@ -143,15 +156,20 @@ export default class ConversationService {
     }
   }
 
-  /** Recherche d'utilisateurs confirmés, par nom ou adresse e-mail. */
-  async searchUsers(me: User, term: string) {
-    return User.query()
+  async listUsers(me: User, term = '') {
+    const query = User.query()
       .whereNot('id', me.id)
       .whereNotNull('emailVerifiedAt')
-      .where((query) => {
-        query.whereILike('fullName', `%${term}%`).orWhereILike('email', `%${term}%`)
-      })
       .orderBy('fullName', 'asc')
-      .limit(20)
+      .limit(500)
+
+    if (term.trim().length > 0) {
+      const like = `%${term.trim()}%`
+      query.where((group) => {
+        group.whereILike('fullName', like).orWhereILike('email', like)
+      })
+    }
+
+    return query
   }
 }

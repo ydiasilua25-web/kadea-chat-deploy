@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html
+  lang="fr"
+  data-theme="{{
+    request.plainCookie('app_theme', {
+      defaultValue: 'light',
+      encoded: false,
+    })
+  }}"
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bienvenue — Kadea Chat</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+      .hint-touch { display: none; }
+      @media (pointer: coarse) {
+        .hint-touch { display: inline; }
+        .hint-key { display: none; }
+      }
+    </style>
+  </head>
+  <body class="grid h-dvh place-items-center overflow-hidden bg-paper px-6 text-ink antialiased">
+    <main id="welcome" data-text="Bienvenue, {{ user.fullName }}" class="flex flex-col items-center text-center">
+      <div class="origin-center scale-[1.8]">
+        @!logo()
+      </div>
+
+      <h1 class="mt-16 min-h-[2.75rem] text-3xl font-medium tracking-tight sm:text-4xl" aria-label="Bienvenue, {{ user.fullName }}">
+        <span id="typed" aria-hidden="true"></span><span id="caret" class="ml-0.5 inline-block h-[1em] w-[3px] translate-y-1 animate-pulse bg-accent"></span>
+      </h1>
+
+      <p id="hint" class="mt-10 text-sm text-muted opacity-0 transition-opacity duration-700">
+        <span class="hint-key">Appuyez sur une touche pour passer</span>
+        <span class="hint-touch">Touchez l’écran pour passer</span>
+      </p>
+    </main>
+  </body>
+</html>

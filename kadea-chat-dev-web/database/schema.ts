@@ -94,8 +94,21 @@ export class EmailTokenSchema extends BaseModel {
   declare userId: number
 }
 
+export class MessageHideSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'messageId', 'userId'] as const
+  $columns = MessageHideSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare messageId: number
+  @column()
+  declare userId: number
+}
+
 export class MessageSchema extends BaseModel {
-  static $columns = ['content', 'conversationId', 'createdAt', 'deletedAt', 'id', 'userId'] as const
+  static $columns = ['content', 'conversationId', 'createdAt', 'deletedAt', 'editedAt', 'id', 'userId'] as const
   $columns = MessageSchema.$columns
   @column()
   declare content: string | null
@@ -105,6 +118,8 @@ export class MessageSchema extends BaseModel {
   declare createdAt: DateTime
   @column.dateTime()
   declare deletedAt: DateTime | null
+  @column.dateTime()
+  declare editedAt: DateTime | null
   @column({ isPrimary: true })
   declare id: number
   @column()
@@ -112,7 +127,7 @@ export class MessageSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['avatarPath', 'createdAt', 'email', 'emailVerifiedAt', 'fullName', 'id', 'password', 'updatedAt'] as const
+  static $columns = ['avatarPath', 'createdAt', 'email', 'emailVerifiedAt', 'fullName', 'id', 'password', 'updatedAt', 'welcomedAt'] as const
   $columns = UserSchema.$columns
   @column()
   declare avatarPath: string | null
@@ -130,4 +145,6 @@ export class UserSchema extends BaseModel {
   declare password: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+  @column.dateTime()
+  declare welcomedAt: DateTime | null
 }

@@ -82,3 +82,12 @@
     color: var(--subtle);
   }
 }
+
+/* Appui long sur téléphone : pas de sélection de texte ni de menu du navigateur sur les bulles */
+@media (pointer: coarse) {
+  [data-bubble] {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+}

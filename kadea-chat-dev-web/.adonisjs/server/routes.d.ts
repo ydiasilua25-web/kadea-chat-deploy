@@ -21,6 +21,9 @@ export type ScannedRoutes = {
     'event_stream': { paramsTuple?: []; params?: {} }
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
+    'welcome.show': { paramsTuple?: []; params?: {} }
+    'profile.update_name': { paramsTuple?: []; params?: {} }
+    'profile.update_password': { paramsTuple?: []; params?: {} }
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.create': { paramsTuple?: []; params?: {} }
     'conversations.list': { paramsTuple?: []; params?: {} }
@@ -29,7 +32,9 @@ export type ScannedRoutes = {
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'messages.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
     'messages.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'messages.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
     'messages.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
+    'messages.hide': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
@@ -41,6 +46,7 @@ export type ScannedRoutes = {
     'forgot_password.create': { paramsTuple?: []; params?: {} }
     'reset_password.create': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'event_stream': { paramsTuple?: []; params?: {} }
+    'welcome.show': { paramsTuple?: []; params?: {} }
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.create': { paramsTuple?: []; params?: {} }
     'conversations.list': { paramsTuple?: []; params?: {} }
@@ -58,6 +64,7 @@ export type ScannedRoutes = {
     'forgot_password.create': { paramsTuple?: []; params?: {} }
     'reset_password.create': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'event_stream': { paramsTuple?: []; params?: {} }
+    'welcome.show': { paramsTuple?: []; params?: {} }
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.create': { paramsTuple?: []; params?: {} }
     'conversations.list': { paramsTuple?: []; params?: {} }
@@ -74,9 +81,13 @@ export type ScannedRoutes = {
     'reset_password.store': { paramsTuple?: []; params?: {} }
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
+    'profile.update_name': { paramsTuple?: []; params?: {} }
+    'profile.update_password': { paramsTuple?: []; params?: {} }
     'conversations.store': { paramsTuple?: []; params?: {} }
     'messages.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'messages.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
     'messages.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
+    'messages.hide': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

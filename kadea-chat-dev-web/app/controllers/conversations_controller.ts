@@ -73,7 +73,7 @@ export default class ConversationsController {
     const conversation = await service.findForMember(me, params.id)
     const [conversations, messages] = await Promise.all([
       service.listFor(me),
-      service.messagesOf(conversation),
+      service.messagesOf(conversation, me),
     ])
     const current = conversations.find((item) => item.id === conversation.id)!
 

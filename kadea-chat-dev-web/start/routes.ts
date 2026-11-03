@@ -56,6 +56,11 @@ transmit.registerRoutes((route) => {
 /**groupe chat... */
 router
   .group(() => {
+    router.get('welcome', [controllers.Welcome, 'show'])
+
+    router.post('profile/name', [controllers.Profile, 'updateName'])
+    router.post('profile/password', [controllers.Profile, 'updatePassword'])
+
     router.get('chat', [controllers.Conversations, 'index'])
     router.get('chat/new', [controllers.Conversations, 'create'])
     router.get('chat/list', [controllers.Conversations, 'list'])
@@ -72,7 +77,15 @@ router
       .post('chat/:id/messages', [controllers.Messages, 'store'])
       .where('id', router.matchers.number())
     router
+      .post('chat/:id/messages/:messageId/edit', [controllers.Messages, 'update'])
+      .where('id', router.matchers.number())
+      .where('messageId', router.matchers.number())
+    router
       .post('chat/:id/messages/:messageId/delete', [controllers.Messages, 'destroy'])
+      .where('id', router.matchers.number())
+      .where('messageId', router.matchers.number())
+    router
+      .post('chat/:id/messages/:messageId/hide', [controllers.Messages, 'hide'])
       .where('id', router.matchers.number())
       .where('messageId', router.matchers.number())
   })

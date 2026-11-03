@@ -28,7 +28,7 @@ export default class SessionController {
     }
 
     await auth.use('web').login(user)
-    response.redirect().toRoute('dashboard')
+    return response.redirect(user.welcomedAt ? '/chat' : '/welcome')
   }
   
   /**

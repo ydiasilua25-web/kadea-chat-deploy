@@ -1,39 +1,130 @@
 @layouts.chat()
-  <div class="flex h-dvh w-full">
-    @include('partials/chat/sidebar')
+  <div class="flex h-dvh w-full flex-col-reverse md:flex-row">
+    @include('partials/chat/rail')
 
-    <main class="flex min-w-0 flex-1 flex-col bg-paper">
-      <header class="flex items-center gap-3 border-b border-line bg-card px-4 py-3 md:px-6">
-        <a href="/chat" aria-label="Retour aux conversations" class="grid size-10 place-items-center rounded-full text-muted hover:bg-panel md:hidden">
-          @svg('lucide:arrow-left', { width: 20, height: 20 })
-        </a>
-        <span class="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ current.initials }}</span>
-        <p class="truncate font-medium">{{ current.title }}</p>
-      </header>
+    <div class="flex min-h-0 min-w-0 flex-1">
+      @include('partials/chat/sidebar')
 
-      <div id="messages" data-conversation-id="{{ current.id }}" x-data x-init="$el.scrollTop = $el.scrollHeight" class="flex flex-1 flex-col gap-3 overflow-y-auto px-4 py-6 md:px-8">
-        @if(!hasMessages)
-          <p data-empty class="m-auto text-sm text-muted">Aucun message. Écris le premier !</p>
-        @end
-        {{{ messagesHtml }}}
-      </div>
+      <main class="flex min-h-0 min-w-0 flex-1 flex-col bg-paper">
+        <header class="flex items-center gap-3 border-b border-line bg-card px-4 py-3 md:px-6">
+          <a href="/chat" aria-label="Retour aux conversations" class="grid size-10 place-items-center rounded-full text-muted hover:bg-panel md:hidden">
+            @svg('lucide:arrow-left', { width: 20, height: 20 })
+          </a>
+          <span class="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ current.initials }}</span>
+          <p class="truncate font-medium">{{ current.title }}</p>
+        </header>
 
-      <form method="POST" action="/chat/{{ current.id }}/messages" data-fetch data-composer class="flex items-center gap-3 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] md:px-6">
-        {{ csrfField() }}
-        <input
-          type="text"
-          name="content"
-          required
-          maxlength="2000"
-          autocomplete="off"
-          aria-label="Écrire un message"
-          placeholder="Écrire un message…"
-          class="h-12 min-w-0 flex-1 rounded-full bg-card px-5 text-base outline-none ring-1 ring-line-2 focus:ring-2 focus:ring-accent"
-        />
-        <button type="submit" aria-label="Envoyer" class="grid size-12 shrink-0 place-items-center rounded-full bg-pine text-pine-fg disabled:opacity-50">
-          @svg('lucide:send', { width: 18, height: 18 })
-        </button>
-      </form>
-    </main>
+        <div id="messages" data-conversation-id="{{ current.id }}" x-data x-init="$el.scrollTop = $el.scrollHeight" class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-6 md:px-8">
+          @if(!hasMessages)
+            <p data-empty class="m-auto text-sm text-muted">Aucun message. Écris le premier !</p>
+          @end
+          {{{ messagesHtml }}}
+        </div>
+
+        <form
+          method="POST"
+          action="/chat/{{ current.id }}/messages"
+          data-fetch
+          data-composer
+          data-default-action="/chat/{{ current.id }}/messages"
+          class="relative px-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] md:px-6"
+        >
+          {{ csrfField() }}
+
+          <div data-edit-banner style="display: none" class="mb-2 items-center justify-between rounded-2xl bg-panel px-4 py-2 text-sm">
+            <span class="text-muted">Modification du message</span>
+            <button type="button" data-cancel-edit class="underline">Annuler</button>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="flex min-w-0 flex-1 items-center gap-1 rounded-full bg-card px-2 ring-1 ring-line-2 focus-within:ring-2 focus-within:ring-accent">
+              <button type="button" data-toggle="emoji-panel" aria-label="Emoji" class="grid size-10 shrink-0 place-items-center rounded-full text-muted hover:bg-panel hover:text-ink">
+                @svg('lucide:smile', { width: 20, height: 20 })
+              </button>
+              <button type="button" data-toggle="attach-panel" aria-label="Joindre" class="grid size-10 shrink-0 place-items-center rounded-full text-muted hover:bg-panel hover:text-ink">
+                @svg('lucide:plus', { width: 20, height: 20 })
+              </button>
+              <input
+                type="text"
+                name="content"
+                required
+                maxlength="2000"
+                autocomplete="off"
+                aria-label="Écrire un message"
+                placeholder="Écrire un message…"
+                class="h-12 min-w-0 flex-1 bg-transparent px-2 text-base outline-none"
+              />
+            </div>
+            <button type="submit" aria-label="Envoyer" class="grid size-12 shrink-0 place-items-center rounded-full bg-pine text-pine-fg disabled:opacity-50">
+              @svg('lucide:send', { width: 18, height: 18 })
+            </button>
+          </div>
+
+          <div id="attach-panel" data-panel style="display: none" class="absolute bottom-full left-4 z-40 mb-2 w-64 rounded-2xl bg-card p-2 shadow-2xl ring-1 ring-line-2 md:left-6">
+            <button type="button" data-soon="Bientôt disponible" class="flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left hover:bg-panel">
+              <span style="color: #7c5cff">
+                @svg('lucide:file-text', { width: 20, height: 20 })
+              </span>
+              Document
+            </button>
+            <button type="button" data-soon="Bientôt disponible" class="flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left hover:bg-panel">
+              <span style="color: #2f80ed">
+                @svg('lucide:image', { width: 20, height: 20 })
+              </span>
+              Photos et vidéos
+            </button>
+            <button type="button" data-soon="Bientôt disponible" class="flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left hover:bg-panel">
+              <span style="color: #e8467c">
+                @svg('lucide:camera', { width: 20, height: 20 })
+              </span>
+              Caméra
+            </button>
+            <button type="button" data-soon="Bientôt disponible" class="flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left hover:bg-panel">
+              <span style="color: #f2711c">
+                @svg('lucide:headphones', { width: 20, height: 20 })
+              </span>
+              Audio
+            </button>
+            <button type="button" data-soon="Bientôt disponible" class="flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left hover:bg-panel">
+              <span style="color: #1a9de0">
+                @svg('lucide:user', { width: 20, height: 20 })
+              </span>
+              Contact
+            </button>
+            <button type="button" data-soon="Bientôt disponible" class="flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left hover:bg-panel">
+              <span style="color: #f0b429">
+                @svg('lucide:align-left', { width: 20, height: 20 })
+              </span>
+              Sondage
+            </button>
+            <button type="button" data-soon="Bientôt disponible" class="flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left hover:bg-panel">
+              <span style="color: #e8467c">
+                @svg('lucide:calendar', { width: 20, height: 20 })
+              </span>
+              Événement
+            </button>
+          </div>
+
+          <div id="emoji-panel" data-panel style="display: none" class="absolute bottom-full left-4 z-40 mb-2 w-[min(88vw,320px)] rounded-2xl bg-card p-2 shadow-2xl ring-1 ring-line-2 md:left-6"></div>
+        </form>
+
+        <div id="message-menu" role="menu" style="display: none" class="fixed z-50 min-w-56 rounded-2xl bg-card p-1.5 shadow-2xl ring-1 ring-line-2">
+          <button type="button" role="menuitem" data-action="edit" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-[15px] hover:bg-panel">
+            @svg('lucide:pencil', { width: 18, height: 18 })
+            Modifier
+          </button>
+          <button type="button" role="menuitem" data-action="delete" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-[15px] hover:bg-panel">
+            @svg('lucide:trash-2', { width: 18, height: 18 })
+            Supprimer pour tous
+          </button>
+          <button type="button" role="menuitem" data-action="hide" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-[15px] hover:bg-panel">
+            @svg('lucide:eye-off', { width: 18, height: 18 })
+            Supprimer pour moi
+          </button>
+        </div>
+      </main>
+    </div>
   </div>
+
+  @include('partials/chat/dialogs')
 @end
