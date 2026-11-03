@@ -8,11 +8,11 @@
   <a href="/chat/new" data-open-new-chat aria-label="Nouvelle conversation" class="grid size-11 place-items-center rounded-2xl text-muted transition hover:bg-card hover:text-ink">
     @svg('lucide:plus', { width: 22, height: 22 })
   </a>
+  <button type="button" data-soon="La création de groupe arrive à l’étape suivante." aria-label="Nouveau groupe" class="grid size-11 place-items-center rounded-2xl text-muted transition hover:bg-card hover:text-ink">
+    @svg('lucide:users', { width: 22, height: 22 })
+  </button>
   <button type="button" data-soon="Les appels arrivent bientôt." aria-label="Appels" class="grid size-11 place-items-center rounded-2xl text-muted transition hover:bg-card hover:text-ink">
     @svg('lucide:phone', { width: 22, height: 22 })
   </button>
-  <div class="md:mt-auto">
-    @!themeToggle()
-  </div>
-  <button type="button" data-open="profile-dialog" aria-label="Mon profil" class="grid size-11 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ me.initials }}</button>
+  <button type="button" data-open="profile-dialog" aria-label="Mon profil" class="grid size-11 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink md:mt-auto">{{ me.initials }}</button>
 </nav>
