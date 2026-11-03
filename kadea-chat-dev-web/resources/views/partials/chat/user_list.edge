@@ -1,0 +1,16 @@
+@each(user in users)
+  <form method="POST" action="/chat" data-user data-search="{{ user.fullName }} {{ user.email }}">
+    {{ csrfField() }}
+    <input type="hidden" name="userId" value="{{ user.id }}" />
+    <button type="submit" class="flex w-full items-center gap-3 rounded-2xl p-2 text-left transition hover:bg-panel">
+      <span class="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ user.initials }}</span>
+      <span class="min-w-0 flex-1">
+        <span class="block truncate font-medium">{{ user.fullName }}</span>
+        <span class="block truncate text-sm text-muted">{{ user.email }}</span>
+      </span>
+    </button>
+  </form>
+@end
+@if(users.length === 0)
+  <p class="px-2 py-6 text-center text-sm text-muted">Aucun autre utilisateur pour le moment.</p>
+@end

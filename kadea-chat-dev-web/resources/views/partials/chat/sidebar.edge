@@ -1,10 +1,10 @@
-<aside class="{{ focus ? 'hidden md:flex' : 'flex' }} h-dvh w-full flex-col border-r border-line bg-card md:w-[340px] md:shrink-0">
+<aside data-chat-me="{{ me.id }}" class="{{ focus ? 'hidden md:flex' : 'flex' }} h-dvh w-full flex-col border-r border-line bg-card md:w-[340px] md:shrink-0">
   <div class="flex items-center justify-between gap-2 px-5 pb-3 pt-5">
     <a href="/chat" class="text-xl font-medium tracking-tight">Conversations</a>
     <div class="flex items-center gap-2">
       @!themeToggle()
-      <a href="/chat/new" aria-label="Nouvelle conversation" class="grid size-10 place-items-center rounded-full bg-pine text-pine-fg">
-        @svg('lucide:plus', { width: 18, height: 18 })
+      <a href="/chat/new" data-open-new-chat aria-label="Nouvelle conversation" class="grid size-10 place-items-center rounded-full bg-pine text-pine-fg">
+       @svg('lucide:plus', { width: 18, height: 18 })
       </a>
       <form method="POST" action="/logout">
         {{ csrfField() }}
@@ -15,19 +15,7 @@
     </div>
   </div>
 
-  <nav class="flex-1 overflow-y-auto" aria-label="Conversations">
-    @if(conversations.length === 0)
-      <p class="px-5 py-8 text-sm text-muted">Aucune conversation pour le moment. Utilise le bouton + pour écrire à quelqu’un.</p>
-    @end
-    @each(item in conversations)
-      <a href="/chat/{{ item.id }}" class="flex items-center gap-3 px-5 py-3 transition hover:bg-panel {{ item.id === currentId ? 'bg-panel' : '' }}">
-        <span class="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ item.initials }}</span>
-        <span class="min-w-0 flex-1">
-          <span class="block truncate font-medium">{{ item.title }}</span>
-          <span class="block truncate text-sm text-muted {{ item.deleted ? 'italic' : '' }}">{{ item.preview }}</span>
-        </span>
-        <span class="text-xs text-subtle">{{ item.time }}</span>
-      </a>
-    @end
+  <nav id="conversation-list" class="flex-1 overflow-y-auto" aria-label="Conversations">
+    @include('partials/chat/conversation_list')
   </nav>
 </aside>

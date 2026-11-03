@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
 import db from '@adonisjs/lucid/services/db'
+import transmit from '@adonisjs/transmit/services/main'
 import Conversation from '#models/conversation'
 import ConversationMember from '#models/conversation_member'
 import Message from '#models/message'
@@ -42,7 +43,6 @@ export default class ConversationService {
         return conversation
       })
     } catch (error) {
-      // Deux clics en même temps : la clé unique a refusé le doublon, on reprend l'existante.
       const raced = await Conversation.findBy('directKey', key)
       if (raced) return raced
       throw error
@@ -100,6 +100,19 @@ export default class ConversationService {
     return items.sort((a, b) => b.sortKey - a.sortKey)
   }
 
+  /** Un message prêt à être affiché (le message doit avoir son auteur chargé). */
+  presentMessage(message: Message) {
+    return {
+      id: message.id,
+      conversationId: message.conversationId,
+      userId: message.userId,
+      authorName: message.author.fullName ?? message.author.email,
+      content: message.content,
+      isDeleted: Boolean(message.deletedAt),
+      time: message.createdAt.setZone(APP_ZONE).toFormat('HH:mm'),
+    }
+  }
+
   /** Les 200 derniers messages, du plus ancien au plus récent. */
   async messagesOf(conversation: Conversation) {
     const rows = await Message.query()
@@ -108,14 +121,26 @@ export default class ConversationService {
       .orderBy('id', 'desc')
       .limit(200)
 
-    return rows.reverse().map((message) => ({
-      id: message.id,
-      userId: message.userId,
-      authorName: message.author.fullName ?? message.author.email,
-      content: message.content,
-      isDeleted: message.isDeleted,
-      time: message.createdAt.setZone(APP_ZONE).toFormat('HH:mm'),
-    }))
+    return rows.reverse().map((message) => this.presentMessage(message))
+  }
+
+  /** Un message de cette conversation, ou une erreur 404. */
+  async findMessage(conversation: Conversation, messageId: number) {
+    const message = await Message.query()
+      .where('id', messageId)
+      .where('conversationId', conversation.id)
+      .preload('author')
+      .firstOrFail()
+
+    return this.presentMessage(message)
+  }
+
+  /** Prévient en temps réel tous les membres : un message a été créé ou modifié. */
+  async notifyMembers(conversationId: number, messageId: number) {
+    const members = await ConversationMember.query().where('conversationId', conversationId)
+    for (const member of members) {
+      transmit.broadcast(`users/${member.userId}`, { conversationId, messageId })
+    }
   }
 
   /** Recherche d'utilisateurs confirmés, par nom ou adresse e-mail. */

@@ -10,6 +10,7 @@
 import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
+import transmit from '@adonisjs/transmit/services/main'
 
 router
   .get('/', async ({ auth, response, view }) => {
@@ -46,14 +47,27 @@ router.post('forgot-password', [controllers.ForgotPassword, 'store'])
 router.get('reset-password/:token', [controllers.ResetPassword, 'create'])
 router.post('reset-password', [controllers.ResetPassword, 'store'])
 
+transmit.registerRoutes((route) => {
+  if (route.getPattern() === '__transmit/subscribe') {
+    route.middleware(middleware.auth())
+  }
+})
+
+/**groupe chat... */
 router
   .group(() => {
     router.get('chat', [controllers.Conversations, 'index'])
     router.get('chat/new', [controllers.Conversations, 'create'])
+    router.get('chat/list', [controllers.Conversations, 'list'])
+    router.get('chat/users', [controllers.Conversations, 'users'])
     router.post('chat', [controllers.Conversations, 'store'])
     router
       .get('chat/:id', [controllers.Conversations, 'show'])
       .where('id', router.matchers.number())
+    router
+      .get('chat/:id/messages/:messageId', [controllers.Messages, 'show'])
+      .where('id', router.matchers.number())
+      .where('messageId', router.matchers.number())
     router
       .post('chat/:id/messages', [controllers.Messages, 'store'])
       .where('id', router.matchers.number())

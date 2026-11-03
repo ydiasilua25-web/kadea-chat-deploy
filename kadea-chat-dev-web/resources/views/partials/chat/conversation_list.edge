@@ -1,0 +1,13 @@
+@if(conversations.length === 0)
+  <p class="px-5 py-8 text-sm text-muted">Aucune conversation pour le moment. Utilise le bouton + pour écrire à quelqu’un.</p>
+@end
+@each(item in conversations)
+  <a href="/chat/{{ item.id }}" class="flex items-center gap-3 px-5 py-3 transition hover:bg-panel {{ item.id === currentId ? 'bg-panel' : '' }}">
+    <span class="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ item.initials }}</span>
+    <span class="min-w-0 flex-1">
+      <span class="block truncate font-medium">{{ item.title }}</span>
+      <span class="block truncate text-sm text-muted {{ item.deleted ? 'italic' : '' }}">{{ item.preview }}</span>
+    </span>
+    <span class="text-xs text-subtle">{{ item.time }}</span>
+  </a>
+@end

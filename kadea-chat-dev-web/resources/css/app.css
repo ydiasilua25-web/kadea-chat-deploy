@@ -6,6 +6,7 @@
 @import 'tailwindcss/utilities.css' layer(utilities);
 
 @source '../views';
+@source '../js';
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 

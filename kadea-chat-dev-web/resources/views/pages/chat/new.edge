@@ -16,30 +16,14 @@
             type="search"
             name="q"
             value="{{ term }}"
-            minlength="2"
             placeholder="Rechercher par nom ou adresse e-mail"
             class="h-12 min-w-0 flex-1 rounded-full bg-card px-5 text-base outline-none ring-1 ring-line-2 focus:ring-2 focus:ring-accent"
           />
           <button type="submit" class="lp-btn h-12">Chercher</button>
         </form>
 
-        @if(term.length >= 2 && users.length === 0)
-          <p class="mt-6 text-sm text-muted">Aucun utilisateur trouvé pour « {{ term }} ».</p>
-        @end
-
-        <div class="mt-6 flex flex-col gap-3">
-          @each(user in users)
-            <form method="POST" action="/chat" class="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-sm">
-              {{ csrfField() }}
-              <input type="hidden" name="userId" value="{{ user.id }}" />
-              <span class="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ user.initials }}</span>
-              <span class="min-w-0 flex-1">
-                <span class="block truncate font-medium">{{ user.fullName }}</span>
-                <span class="block truncate text-sm text-muted">{{ user.email }}</span>
-              </span>
-              <button type="submit" class="lp-btn lp-btn--soft">Écrire</button>
-            </form>
-          @end
+        <div class="mt-6">
+          @include('partials/chat/user_list')
         </div>
       </div>
     </main>

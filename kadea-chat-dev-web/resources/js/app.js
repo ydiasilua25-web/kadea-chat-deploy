@@ -1,5 +1,6 @@
 import Alpine from 'alpinejs'
 import './sphere.js'
+import './chat.js'
 
 Alpine.data('alert', function () {
   return {

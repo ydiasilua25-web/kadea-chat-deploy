@@ -18,10 +18,16 @@ export type ScannedRoutes = {
     'forgot_password.store': { paramsTuple?: []; params?: {} }
     'reset_password.create': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'reset_password.store': { paramsTuple?: []; params?: {} }
+    'event_stream': { paramsTuple?: []; params?: {} }
+    'subscribe': { paramsTuple?: []; params?: {} }
+    'unsubscribe': { paramsTuple?: []; params?: {} }
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.create': { paramsTuple?: []; params?: {} }
+    'conversations.list': { paramsTuple?: []; params?: {} }
+    'conversations.users': { paramsTuple?: []; params?: {} }
     'conversations.store': { paramsTuple?: []; params?: {} }
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'messages.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
     'messages.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'messages.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
   }
@@ -34,9 +40,13 @@ export type ScannedRoutes = {
     'verify_email.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'forgot_password.create': { paramsTuple?: []; params?: {} }
     'reset_password.create': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'event_stream': { paramsTuple?: []; params?: {} }
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.create': { paramsTuple?: []; params?: {} }
+    'conversations.list': { paramsTuple?: []; params?: {} }
+    'conversations.users': { paramsTuple?: []; params?: {} }
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'messages.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
@@ -47,9 +57,13 @@ export type ScannedRoutes = {
     'verify_email.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'forgot_password.create': { paramsTuple?: []; params?: {} }
     'reset_password.create': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'event_stream': { paramsTuple?: []; params?: {} }
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.create': { paramsTuple?: []; params?: {} }
+    'conversations.list': { paramsTuple?: []; params?: {} }
+    'conversations.users': { paramsTuple?: []; params?: {} }
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'messages.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
   }
   POST: {
     'new_account.store': { paramsTuple?: []; params?: {} }
@@ -58,6 +72,8 @@ export type ScannedRoutes = {
     'verify_email.resend': { paramsTuple?: []; params?: {} }
     'forgot_password.store': { paramsTuple?: []; params?: {} }
     'reset_password.store': { paramsTuple?: []; params?: {} }
+    'subscribe': { paramsTuple?: []; params?: {} }
+    'unsubscribe': { paramsTuple?: []; params?: {} }
     'conversations.store': { paramsTuple?: []; params?: {} }
     'messages.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'messages.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }

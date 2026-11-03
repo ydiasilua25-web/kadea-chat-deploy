@@ -12,10 +12,18 @@ export default class ConversationsController {
   async index({ auth, view }: HttpContext) {
     const me = auth.use('web').getUserOrFail()
     const conversations = await new ConversationService().listFor(me)
-    return view.render('pages/chat/index', { conversations, currentId: null, focus: false })
+    return view.render('pages/chat/index', { conversations, currentId: null, focus: false, me })
   }
 
-  /** Recherche d'un utilisateur pour démarrer une conversation. */
+  /** Seulement la liste, en HTML : sert à la mettre à jour en temps réel. */
+  async list({ auth, request, view }: HttpContext) {
+    const me = auth.use('web').getUserOrFail()
+    const conversations = await new ConversationService().listFor(me)
+    const currentId = Number(request.input('current')) || null
+    return view.render('partials/chat/conversation_list', { conversations, currentId })
+  }
+
+  /** Page de secours (sans JavaScript) : tous les utilisateurs, avec recherche. */
   async create({ auth, request, view }: HttpContext) {
     const me = auth.use('web').getUserOrFail()
     const service = new ConversationService()
@@ -23,10 +31,24 @@ export default class ConversationsController {
 
     const [conversations, users] = await Promise.all([
       service.listFor(me),
-      term.length >= 2 ? service.searchUsers(me, term) : Promise.resolve([]),
+      service.listUsers(me, term),
     ])
 
-    return view.render('pages/chat/new', { conversations, users, term, currentId: null, focus: true })
+    return view.render('pages/chat/new', {
+      conversations,
+      users,
+      term,
+      currentId: null,
+      focus: true,
+      me,
+    })
+  }
+
+  /** La liste des utilisateurs en HTML : alimente la fenêtre « nouvelle conversation ». */
+  async users({ auth, view }: HttpContext) {
+    const me = auth.use('web').getUserOrFail()
+    const users = await new ConversationService().listUsers(me)
+    return view.render('partials/chat/user_list', { users })
   }
 
   /** Démarre (ou rouvre) une conversation privée. */
@@ -55,11 +77,18 @@ export default class ConversationsController {
     ])
     const current = conversations.find((item) => item.id === conversation.id)!
 
+    const rendered = await Promise.all(
+      messages.map((message) =>
+        view.render('partials/chat/message', { message, me, isGroup: current.isGroup })
+      )
+    )
+
     return view.render('pages/chat/show', {
       conversations,
       current,
       currentId: current.id,
-      messages,
+      messagesHtml: rendered.join(''),
+      hasMessages: messages.length > 0,
       me,
       focus: true,
     })

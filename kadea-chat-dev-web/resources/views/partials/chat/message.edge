@@ -1,0 +1,26 @@
+<div
+  data-message-id="{{ message.id }}"
+  class="flex max-w-[85%] flex-col gap-1 md:max-w-[65%] {{ message.userId === me.id ? 'items-end self-end' : 'self-start' }}"
+>
+  @if(isGroup && message.userId !== me.id)
+    <span class="px-1 text-xs text-muted">{{ message.authorName }}</span>
+  @end
+
+  @if(message.isDeleted)
+    <p class="rounded-2xl border border-dashed border-line-2 px-4 py-2.5 text-sm italic text-muted">Ce message a été supprimé</p>
+  @elseif(message.userId === me.id)
+    <p class="whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-pine px-4 py-2.5 text-pine-fg">{{ message.content }}</p>
+  @else
+    <p class="whitespace-pre-wrap break-words rounded-2xl rounded-bl-md bg-card px-4 py-2.5 shadow-sm">{{ message.content }}</p>
+  @end
+
+  <div class="flex items-center gap-3 px-1 text-xs text-subtle">
+    <span>{{ message.time }}</span>
+    @if(message.userId === me.id && !message.isDeleted)
+      <form method="POST" action="/chat/{{ message.conversationId }}/messages/{{ message.id }}/delete" data-fetch>
+        {{ csrfField() }}
+        <button type="submit" class="underline hover:text-ink">Supprimer</button>
+      </form>
+    @end
+  </div>
+</div>
