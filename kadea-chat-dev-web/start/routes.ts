@@ -88,5 +88,14 @@ router
       .post('chat/:id/messages/:messageId/hide', [controllers.Messages, 'hide'])
       .where('id', router.matchers.number())
       .where('messageId', router.matchers.number())
+
+    router.post('groups', [controllers.Groups, 'store'])
+    router
+      .post('chat/:id/members', [controllers.Groups, 'addMembers'])
+      .where('id', router.matchers.number())
+    router
+      .post('chat/:id/members/:userId/remove', [controllers.Groups, 'removeMember'])
+      .where('id', router.matchers.number())
+      .where('userId', router.matchers.number())
   })
   .use(middleware.auth())

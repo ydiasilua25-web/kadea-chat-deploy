@@ -48,52 +48,57 @@ if (emojiPanel) {
   emojiPanel.append(grid)
 }
 
-/* ---------- Fenêtre « nouvelle conversation » ---------- */
-const newChat = document.getElementById('new-chat')
-let usersLoaded = false
-
+/* ---------- Fenêtres de choix d'utilisateurs (conversation, groupe) ---------- */
 const normalize = (text) =>
   text
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
 
-function filterUsers() {
-  if (!newChat) return
-  const results = newChat.querySelector('[data-user-results]')
-  const input = newChat.querySelector('[data-user-search]')
-  const noResult = newChat.querySelector('[data-no-result]')
-  const term = normalize(input.value.trim())
-  let visible = 0
+function setupUserDialog(dialog, url) {
+  if (!dialog) return null
+  const results = dialog.querySelector('[data-user-results]')
+  const input = dialog.querySelector('[data-user-search]')
+  const noResult = dialog.querySelector('[data-no-result]')
+  let loaded = false
 
-  results.querySelectorAll('[data-user]').forEach((row) => {
-    const match = normalize(row.dataset.search).includes(term)
-    row.style.display = match ? '' : 'none'
-    if (match) visible++
-  })
-  noResult.style.display = usersLoaded && visible === 0 ? 'block' : 'none'
-  results.scrollTop = 0
-}
-
-async function loadUsers() {
-  if (usersLoaded || !newChat) return
-  const results = newChat.querySelector('[data-user-results]')
-  try {
-    const response = await fetch('/chat/users', { headers: { 'X-Requested-With': 'fetch' } })
-    if (!response.ok) throw new Error('Chargement impossible')
-    results.innerHTML = await response.text()
-    usersLoaded = true
-    filterUsers()
-  } catch {
-    results.textContent = 'Impossible de charger les utilisateurs. Réessaie.'
+  function filter() {
+    const term = normalize(input.value.trim())
+    let visible = 0
+    results.querySelectorAll('[data-user]').forEach((row) => {
+      const match = normalize(row.dataset.search).includes(term)
+      row.style.display = match ? '' : 'none'
+      if (match) visible++
+    })
+    noResult.style.display = loaded && visible === 0 ? 'block' : 'none'
+    results.scrollTop = 0
   }
+
+  async function load() {
+    if (loaded) return
+    try {
+      const response = await fetch(url, { headers: { 'X-Requested-With': 'fetch' } })
+      if (!response.ok) throw new Error('Chargement impossible')
+      results.innerHTML = await response.text()
+      loaded = true
+      filter()
+    } catch {
+      results.textContent = 'Impossible de charger les utilisateurs. Réessaie.'
+    }
+  }
+
+  input.addEventListener('input', filter)
+  dialog.addEventListener('close', () => {
+    input.value = ''
+    dialog.querySelector('form[data-reset]')?.reset()
+    filter()
+  })
+
+  return { load }
 }
 
-newChat?.querySelector('[data-user-search]')?.addEventListener('input', filterUsers)
-newChat?.addEventListener('close', () => {
-  newChat.querySelector('[data-user-search]').value = ''
-  filterUsers()
-})
+const newChatUsers = setupUserDialog(document.getElementById('new-chat'), '/chat/users')
+const newGroupUsers = setupUserDialog(document.getElementById('new-group'), '/chat/users?select=1')
 
 function openDialog(id) {
   document.querySelectorAll('dialog[open]').forEach((dialog) => dialog.close())
@@ -105,10 +110,7 @@ function openDialog(id) {
 /* ---------- Boutons généraux (toutes les pages de chat) ---------- */
 document.addEventListener('click', (event) => {
   const target = event.target
-  if (!(target instanceof Element)) {
-    if (target instanceof HTMLDialogElement) target.close()
-    return
-  }
+  if (!(target instanceof Element)) return
 
   const emoji = target.closest('[data-emoji]')
   if (emoji) {
@@ -120,11 +122,19 @@ document.addEventListener('click', (event) => {
     return
   }
 
-  if (target.closest('[data-open-new-chat]') && newChat) {
+  if (target.closest('[data-open-new-chat]') && newChatUsers) {
     event.preventDefault()
     openDialog('new-chat')
-    loadUsers()
-    newChat.querySelector('[data-user-search]')?.focus()
+    newChatUsers.load()
+    document.querySelector('#new-chat [data-user-search]')?.focus()
+    return
+  }
+
+  if (target.closest('[data-open-new-group]') && newGroupUsers) {
+    event.preventDefault()
+    openDialog('new-group')
+    newGroupUsers.load()
+    document.querySelector('#new-group input[name="name"]')?.focus()
     return
   }
 
@@ -248,9 +258,14 @@ if (aside) {
 
   subscription.onMessage((event) => {
     refreshList()
-    if (conversationId && String(event.conversationId) === conversationId) {
-      loadMessage(event.messageId)
+    if (!conversationId || String(event.conversationId) !== conversationId) return
+
+    // Retiré du groupe pendant qu'on le consulte : retour à la liste.
+    if (event.removed) {
+      window.location.assign('/chat')
+      return
     }
+    if (event.messageId) loadMessage(event.messageId)
   })
 
   /* --- Mode « modification » du champ d'écriture --- */
@@ -316,8 +331,8 @@ if (aside) {
     const own = wrapper.dataset.own === '1'
     const deleted = wrapper.dataset.deleted === '1'
     const show = (name, visible) => {
-      const item = menu.querySelector(`[data-action="${name}"]`)
-      if (item) item.style.display = visible ? 'flex' : 'none'
+    const item = menu.querySelector(`[data-action="${name}"]`)
+    if (item) item.style.display = visible ? 'flex' : 'none'
     }
     show('edit', own && !deleted)
     show('delete', own && !deleted)

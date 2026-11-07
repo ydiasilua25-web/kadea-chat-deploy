@@ -10,8 +10,18 @@
           <a href="/chat" aria-label="Retour aux conversations" class="grid size-10 place-items-center rounded-full text-muted hover:bg-panel md:hidden">
             @svg('lucide:arrow-left', { width: 20, height: 20 })
           </a>
-          <span class="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ current.initials }}</span>
-          <p class="truncate font-medium">{{ current.title }}</p>
+          @if(current.isGroup)
+            <button type="button" data-open="group-info" class="flex min-w-0 flex-1 items-center gap-3 text-left">
+              <span class="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ current.initials }}</span>
+              <span class="min-w-0">
+                <span class="block truncate font-medium">{{ current.title }}</span>
+                <span class="block text-xs text-muted">{{ current.memberCount }} membres · touche pour les voir</span>
+              </span>
+            </button>
+          @else
+            <span class="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ current.initials }}</span>
+            <p class="truncate font-medium">{{ current.title }}</p>
+          @end
         </header>
 
         <div id="messages" data-conversation-id="{{ current.id }}" x-data x-init="$el.scrollTop = $el.scrollHeight" class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-6 md:px-8">
@@ -127,4 +137,7 @@
   </div>
 
   @include('partials/chat/dialogs')
+  @if(current.isGroup)
+    @include('partials/chat/group_dialog')
+  @end
 @end

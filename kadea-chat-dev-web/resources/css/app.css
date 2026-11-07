@@ -94,7 +94,7 @@
 
 /* Champs de saisie : pas de bordure ni de fond du navigateur (les classes et le kit gardent la priorité) */
 @layer base {
-  input,
+  input:not([type='checkbox']):not([type='radio']),
   textarea,
   select {
     border: 0;

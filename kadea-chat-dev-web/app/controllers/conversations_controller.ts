@@ -44,12 +44,15 @@ export default class ConversationsController {
     })
   }
 
-  /** La liste des utilisateurs en HTML : alimente la fenêtre « nouvelle conversation ». */
-  async users({ auth, view }: HttpContext) {
+  /** La liste des utilisateurs en HTML (simple liste, ou cases à cocher pour un groupe). */
+  async users({ auth, request, view }: HttpContext) {
     const me = auth.use('web').getUserOrFail()
     const users = await new ConversationService().listUsers(me)
-    return view.render('partials/chat/user_list', { users })
+    const template =
+      request.input('select') === '1' ? 'partials/chat/user_checklist' : 'partials/chat/user_list'
+    return view.render(template, { users })
   }
+
 
   /** Démarre (ou rouvre) une conversation privée. */
   async store({ auth, request, response }: HttpContext) {
@@ -65,7 +68,7 @@ export default class ConversationsController {
     return response.redirect(`/chat/${conversation.id}`)
   }
 
-  /** Une discussion ouverte, avec ses messages. */
+  /** Une discussion ouverte, avec ses messages (et les infos du groupe si c'en est un). */
   async show({ auth, params, view }: HttpContext) {
     const me = auth.use('web').getUserOrFail()
     const service = new ConversationService()
@@ -76,6 +79,11 @@ export default class ConversationsController {
       service.messagesOf(conversation, me),
     ])
     const current = conversations.find((item) => item.id === conversation.id)!
+
+    const members = current.isGroup ? await service.membersOf(conversation) : []
+    const iAmAdmin = current.isGroup ? await service.isAdmin(me, conversation) : false
+    const candidates =
+      current.isGroup && iAmAdmin ? await service.candidatesFor(conversation) : []
 
     const rendered = await Promise.all(
       messages.map((message) =>
@@ -89,6 +97,9 @@ export default class ConversationsController {
       currentId: current.id,
       messagesHtml: rendered.join(''),
       hasMessages: messages.length > 0,
+      members,
+      iAmAdmin,
+      candidates,
       me,
       focus: true,
     })

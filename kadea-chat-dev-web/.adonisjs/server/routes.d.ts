@@ -35,6 +35,9 @@ export type ScannedRoutes = {
     'messages.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
     'messages.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
     'messages.hide': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
+    'groups.store': { paramsTuple?: []; params?: {} }
+    'groups.add_members': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'groups.remove_member': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'userId': ParamValue} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
@@ -88,6 +91,9 @@ export type ScannedRoutes = {
     'messages.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
     'messages.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
     'messages.hide': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
+    'groups.store': { paramsTuple?: []; params?: {} }
+    'groups.add_members': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'groups.remove_member': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'userId': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

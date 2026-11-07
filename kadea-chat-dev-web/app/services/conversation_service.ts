@@ -88,6 +88,7 @@ export default class ConversationService {
         return {
           id: conversation.id,
           isGroup: conversation.isGroup,
+          memberCount: conversation.members.length,
           title,
           initials: initialsOf(title),
           preview,
@@ -149,7 +150,8 @@ export default class ConversationService {
     await MessageHide.firstOrCreate({ messageId: message.id, userId: user.id })
   }
 
-  async notifyMembers(conversationId: number, messageId: number) {
+    /** Prévient en temps réel tous les membres. messageId vaut null quand seule la liste doit se mettre à jour. */
+  async notifyMembers(conversationId: number, messageId: number | null) {
     const members = await ConversationMember.query().where('conversationId', conversationId)
     for (const member of members) {
       transmit.broadcast(`users/${member.userId}`, { conversationId, messageId })
@@ -171,5 +173,104 @@ export default class ConversationService {
     }
 
     return query
+  }
+
+  /** Crée un groupe : le créateur en est l'administrateur. Retourne null s'il n'y a aucun membre valide. */
+  async createGroup(me: User, name: string, userIds: number[]) {
+    const ids = [...new Set(userIds)].filter((id) => id !== me.id)
+    const users = await User.query().whereIn('id', ids).whereNotNull('emailVerifiedAt')
+    if (users.length === 0) return null
+
+    const conversation = await db.transaction(async (trx) => {
+      const group = await Conversation.create(
+        { type: 'group', name, createdBy: me.id },
+        { client: trx }
+      )
+      await ConversationMember.createMany(
+        [
+          { conversationId: group.id, userId: me.id, role: 'admin' as const },
+          ...users.map((user) => ({
+            conversationId: group.id,
+            userId: user.id,
+            role: 'member' as const,
+          })),
+        ],
+        { client: trx }
+      )
+      return group
+    })
+
+    await this.notifyMembers(conversation.id, null)
+    return conversation
+  }
+
+  async isAdmin(user: User, conversation: Conversation) {
+    const member = await ConversationMember.query()
+      .where('conversationId', conversation.id)
+      .where('userId', user.id)
+      .first()
+    return member?.role === 'admin'
+  }
+
+  /** Les membres d'un groupe, administrateur en premier. */
+  async membersOf(conversation: Conversation) {
+    const rows = await ConversationMember.query()
+      .where('conversationId', conversation.id)
+      .preload('user')
+
+    return rows
+      .map((member) => {
+        const name = member.user.fullName ?? member.user.email
+        return {
+          userId: member.userId,
+          name,
+          email: member.user.email,
+          initials: initialsOf(name),
+          isAdmin: member.role === 'admin',
+        }
+      })
+      .sort((a, b) => Number(b.isAdmin) - Number(a.isAdmin) || a.name.localeCompare(b.name, 'fr'))
+  }
+
+  /** Les utilisateurs confirmés qui ne sont pas encore dans le groupe. */
+  async candidatesFor(conversation: Conversation) {
+    return User.query()
+      .whereNotNull('emailVerifiedAt')
+      .whereNotIn('id', (members) => {
+        members.from('conversation_members').where('conversation_id', conversation.id).select('user_id')
+      })
+      .orderBy('fullName', 'asc')
+      .limit(500)
+  }
+
+  async addMembers(conversation: Conversation, userIds: number[]) {
+    const users = await User.query()
+      .whereIn('id', [...new Set(userIds)])
+      .whereNotNull('emailVerifiedAt')
+
+    for (const user of users) {
+      await ConversationMember.firstOrCreate(
+        { conversationId: conversation.id, userId: user.id },
+        { role: 'member' }
+      )
+    }
+    await this.notifyMembers(conversation.id, null)
+  }
+
+  /** Retire un membre (jamais l'administrateur) et le prévient en temps réel. */
+  async removeMember(conversation: Conversation, userId: number) {
+    const member = await ConversationMember.query()
+      .where('conversationId', conversation.id)
+      .where('userId', userId)
+      .where('role', 'member')
+      .first()
+    if (!member) return
+
+    await member.delete()
+    transmit.broadcast(`users/${userId}`, {
+      conversationId: conversation.id,
+      messageId: null,
+      removed: true,
+    })
   }
 }
