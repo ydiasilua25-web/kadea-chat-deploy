@@ -1,0 +1,105 @@
+Table users {
+  id integer [pk, increment]
+  full_name varchar(100) [not null]
+  email varchar(254) [not null, unique]
+  password varchar(255) [not null, note: 'mot de passe haché']
+  avatar_path varchar(255)
+  email_verified_at timestamp [note: 'vide = e-mail non confirmé']
+  welcomed_at timestamp [note: 'date de la page de bienvenue, vue une seule fois']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table email_tokens {
+  id integer [pk, increment]
+  user_id integer [not null]
+  type varchar(20) [not null, note: 'verify_email ou reset_password']
+  token_hash varchar(255) [not null, unique, note: 'empreinte du jeton']
+  expires_at timestamp [not null]
+  used_at timestamp [note: 'vide = pas encore utilisé']
+  created_at timestamp [not null]
+}
+
+Table conversations {
+  id integer [pk, increment]
+  type varchar(10) [not null, note: 'private ou group']
+  name varchar(100) [note: 'vide pour une conversation privée']
+  direct_key varchar(50) [unique, note: 'ex. 3:7 ; vide pour un groupe']
+  created_by integer [not null]
+  created_at timestamp [not null]
+}
+
+Table conversation_members {
+  id integer [pk, increment]
+  conversation_id integer [not null]
+  user_id integer [not null]
+  role varchar(10) [not null, note: 'admin ou member']
+  joined_at timestamp [not null]
+  last_delivered_message_id integer [note: 'dernier message reçu']
+  last_read_message_id integer [note: 'dernier message lu']
+
+  indexes {
+    (conversation_id, user_id) [unique]
+    user_id
+  }
+}
+
+Table messages {
+  id integer [pk, increment]
+  conversation_id integer [not null]
+  user_id integer [not null]
+  content text [note: 'vide si supprimé ou fichier seul']
+  deleted_at timestamp [note: 'supprimé pour tous']
+  edited_at timestamp [note: 'date de la dernière modification']
+  created_at timestamp [not null]
+
+  indexes {
+    (conversation_id, id)
+  }
+}
+
+Table message_hides {
+  id integer [pk, increment]
+  message_id integer [not null]
+  user_id integer [not null]
+  created_at timestamp [not null, note: 'message caché pour cet utilisateur seulement']
+
+  indexes {
+    (message_id, user_id) [unique]
+  }
+}
+
+Table attachments {
+  id integer [pk, increment]
+  message_id integer [not null]
+  storage_path varchar(255) [not null]
+  original_name varchar(255) [not null]
+  mime_type varchar(100) [not null]
+  size_bytes integer [not null]
+  created_at timestamp [not null]
+}
+
+Table blocks {
+  id integer [pk, increment]
+  blocker_id integer [not null, note: 'celui qui bloque']
+  blocked_id integer [not null, note: 'celui qui est bloqué']
+  created_at timestamp [not null]
+
+  indexes {
+    (blocker_id, blocked_id) [unique]
+  }
+}
+
+Ref: email_tokens.user_id > users.id [delete: cascade]
+Ref: conversations.created_by > users.id
+Ref: conversation_members.conversation_id > conversations.id [delete: cascade]
+Ref: conversation_members.user_id > users.id [delete: cascade]
+Ref: conversation_members.last_delivered_message_id > messages.id [delete: set null]
+Ref: conversation_members.last_read_message_id > messages.id [delete: set null]
+Ref: messages.conversation_id > conversations.id [delete: cascade]
+Ref: messages.user_id > users.id
+Ref: message_hides.message_id > messages.id [delete: cascade]
+Ref: message_hides.user_id > users.id [delete: cascade]
+Ref: attachments.message_id > messages.id [delete: cascade]
+Ref: blocks.blocker_id > users.id [delete: cascade]
+Ref: blocks.blocked_id > users.id [delete: cascade]
