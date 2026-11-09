@@ -10,6 +10,8 @@ import User from '#models/user'
 /** Fuseau d'affichage des heures. À changer ici si besoin. */
 const APP_ZONE = 'Africa/Kinshasa'
 
+type MessageStatus = 'sent' | 'delivered' | 'read'
+
 function initialsOf(text: string) {
   const parts = text.trim().split(/\s+/)
   return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? parts[0]?.[1] ?? '')).toUpperCase()
@@ -55,7 +57,7 @@ export default class ConversationService {
       .firstOrFail()
   }
 
-  /** La liste de gauche : le dernier message VISIBLE par l'utilisateur. */
+  /** La liste de gauche : dernier message visible, heure et nombre de messages non lus. */
   async listFor(user: User) {
     const conversations = await Conversation.query()
       .whereHas('members', (query) => query.where('userId', user.id))
@@ -70,6 +72,21 @@ export default class ConversationService {
           })
           .orderBy('id', 'desc')
           .first()
+
+        const mine = conversation.members.find((member) => member.userId === user.id)
+        const lastRead = mine?.lastReadMessageId ?? 0
+
+        const unreadRow = await Message.query()
+          .where('conversationId', conversation.id)
+          .whereNot('userId', user.id)
+          .where('id', '>', lastRead)
+          .whereNull('deletedAt')
+          .whereNotIn('id', (hidden) => {
+            hidden.from('message_hides').where('user_id', user.id).select('message_id')
+          })
+          .count('* as total')
+          .first()
+        const unread = Number(unreadRow?.$extras.total ?? 0)
 
         const other = conversation.members.find((member) => member.userId !== user.id)
         const title = conversation.isGroup
@@ -93,6 +110,7 @@ export default class ConversationService {
           initials: initialsOf(title),
           preview,
           deleted: last?.isDeleted ?? false,
+          unread,
           time: today ? lastAt.toFormat('HH:mm') : lastAt.toFormat('dd/MM'),
           sortKey: lastAt.toMillis(),
         }
@@ -103,7 +121,7 @@ export default class ConversationService {
   }
 
   /** Un message prêt à être affiché (l'auteur doit être chargé). */
-  presentMessage(message: Message) {
+  presentMessage(message: Message, status: MessageStatus | null = null) {
     return {
       id: message.id,
       conversationId: message.conversationId,
@@ -112,12 +130,46 @@ export default class ConversationService {
       content: message.content,
       isDeleted: Boolean(message.deletedAt),
       isEdited: Boolean(message.editedAt),
+      status,
       time: message.createdAt.setZone(APP_ZONE).toFormat('HH:mm'),
     }
   }
 
+  /** Jusqu'où TOUS les autres membres ont reçu et lu : le plus en retard décide. */
+  async statusCursors(conversation: Conversation, me: User) {
+    const others = await ConversationMember.query()
+      .where('conversationId', conversation.id)
+      .whereNot('userId', me.id)
+
+    if (others.length === 0) return { minDelivered: 0, minRead: 0 }
+
+    return {
+      minDelivered: Math.min(...others.map((member) => member.lastDeliveredMessageId ?? 0)),
+      minRead: Math.min(...others.map((member) => member.lastReadMessageId ?? 0)),
+    }
+  }
+
+  private statusFor(
+    message: Message,
+    me: User,
+    cursors: { minDelivered: number; minRead: number }
+  ): MessageStatus | null {
+    if (message.userId !== me.id) return null
+    if (message.id <= cursors.minRead) return 'read'
+    if (message.id <= cursors.minDelivered) return 'delivered'
+    return 'sent'
+  }
+
+  /** Un message avec son statut calculé pour l'utilisateur. */
+  async presentFor(message: Message, conversation: Conversation, me: User) {
+    const cursors = await this.statusCursors(conversation, me)
+    return this.presentMessage(message, this.statusFor(message, me, cursors))
+  }
+
   /** Les 200 derniers messages que l'utilisateur n'a pas cachés. */
   async messagesOf(conversation: Conversation, user: User) {
+    const cursors = await this.statusCursors(conversation, user)
+
     const rows = await Message.query()
       .where('conversationId', conversation.id)
       .whereNotIn('id', (hidden) => {
@@ -127,17 +179,19 @@ export default class ConversationService {
       .orderBy('id', 'desc')
       .limit(200)
 
-    return rows.reverse().map((message) => this.presentMessage(message))
+    return rows
+      .reverse()
+      .map((message) => this.presentMessage(message, this.statusFor(message, user, cursors)))
   }
 
-  async findMessage(conversation: Conversation, messageId: number) {
+  async findMessage(conversation: Conversation, messageId: number, me: User) {
     const message = await Message.query()
       .where('id', messageId)
       .where('conversationId', conversation.id)
       .preload('author')
       .firstOrFail()
 
-    return this.presentMessage(message)
+    return this.presentFor(message, conversation, me)
   }
 
   /** « Supprimer pour moi » : le message disparaît seulement pour cet utilisateur. */
@@ -150,11 +204,57 @@ export default class ConversationService {
     await MessageHide.firstOrCreate({ messageId: message.id, userId: user.id })
   }
 
-    /** Prévient en temps réel tous les membres. messageId vaut null quand seule la liste doit se mettre à jour. */
-  async notifyMembers(conversationId: number, messageId: number | null) {
+  /**
+   * Prévient en temps réel tous les membres.
+   * messageId vaut null quand seule la liste ou les coches doivent se mettre à jour.
+   */
+  async notifyMembers(conversationId: number, messageId: number | null, status = false) {
     const members = await ConversationMember.query().where('conversationId', conversationId)
     for (const member of members) {
-      transmit.broadcast(`users/${member.userId}`, { conversationId, messageId })
+      transmit.broadcast(`users/${member.userId}`, { conversationId, messageId, status })
+    }
+  }
+
+  /** « Lu » : l'utilisateur a vu la conversation jusqu'à son dernier message. */
+  async markRead(user: User, conversation: Conversation) {
+    const last = await Message.query()
+      .where('conversationId', conversation.id)
+      .orderBy('id', 'desc')
+      .first()
+    if (!last) return
+
+    const member = await ConversationMember.query()
+      .where('conversationId', conversation.id)
+      .where('userId', user.id)
+      .firstOrFail()
+
+    const read = member.lastReadMessageId ?? 0
+    const delivered = member.lastDeliveredMessageId ?? 0
+    if (read >= last.id && delivered >= last.id) return
+
+    // Les marque-pages n'avancent que vers l'avant.
+    member.lastReadMessageId = Math.max(read, last.id)
+    member.lastDeliveredMessageId = Math.max(delivered, last.id)
+    await member.save()
+
+    await this.notifyMembers(conversation.id, null, true)
+  }
+
+  /** « Reçu » : l'utilisateur est connecté, tous ses messages en attente sont considérés reçus. */
+  async markAllDelivered(user: User) {
+    const result = await db.rawQuery(
+      `UPDATE conversation_members AS cm
+       SET last_delivered_message_id = m.max_id
+       FROM (SELECT conversation_id, MAX(id) AS max_id FROM messages GROUP BY conversation_id) AS m
+       WHERE cm.conversation_id = m.conversation_id
+         AND cm.user_id = ?
+         AND (cm.last_delivered_message_id IS NULL OR cm.last_delivered_message_id < m.max_id)
+       RETURNING cm.conversation_id`,
+      [user.id]
+    )
+
+    for (const row of result.rows) {
+      await this.notifyMembers(row.conversation_id, null, true)
     }
   }
 
@@ -237,7 +337,10 @@ export default class ConversationService {
     return User.query()
       .whereNotNull('emailVerifiedAt')
       .whereNotIn('id', (members) => {
-        members.from('conversation_members').where('conversation_id', conversation.id).select('user_id')
+        members
+          .from('conversation_members')
+          .where('conversation_id', conversation.id)
+          .select('user_id')
       })
       .orderBy('fullName', 'asc')
       .limit(500)

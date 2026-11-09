@@ -14,7 +14,7 @@ export default class MessagesController {
     const me = auth.use('web').getUserOrFail()
     const service = new ConversationService()
     const conversation = await service.findForMember(me, params.id)
-    const message = await service.findMessage(conversation, params.messageId)
+    const message = await service.findMessage(conversation, params.messageId, me)
     return view.render('partials/chat/message', { message, me, isGroup: conversation.isGroup })
   }
 
@@ -34,7 +34,7 @@ export default class MessagesController {
 
     if (request.header('x-requested-with') === 'fetch') {
       return view.render('partials/chat/message', {
-        message: service.presentMessage(message),
+        message: await service.presentFor(message, conversation, me),
         me,
         isGroup: conversation.isGroup,
       })
@@ -66,7 +66,7 @@ export default class MessagesController {
 
     if (request.header('x-requested-with') === 'fetch') {
       return view.render('partials/chat/message', {
-        message: service.presentMessage(message),
+        message: await service.presentFor(message, conversation, me),
         me,
         isGroup: conversation.isGroup,
       })
@@ -97,7 +97,7 @@ export default class MessagesController {
 
     if (request.header('x-requested-with') === 'fetch') {
       return view.render('partials/chat/message', {
-        message: service.presentMessage(message),
+        message: await service.presentFor(message, conversation, me),
         me,
         isGroup: conversation.isGroup,
       })
@@ -105,7 +105,7 @@ export default class MessagesController {
     return response.redirect(`/chat/${conversation.id}`)
   }
 
-  /** Supprimer pour moi seulement : valable pour n'importe quel message de la conversation. */
+  /** Supprimer pour moi seulement. */
   async hide({ auth, params, request, response }: HttpContext) {
     const me = auth.use('web').getUserOrFail()
     const service = new ConversationService()

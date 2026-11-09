@@ -97,5 +97,12 @@ router
       .post('chat/:id/members/:userId/remove', [controllers.Groups, 'removeMember'])
       .where('id', router.matchers.number())
       .where('userId', router.matchers.number())
+
+    router
+      .post('chat/:id/read', [controllers.Conversations, 'read'])
+      .where('id', router.matchers.number())
+    router
+      .get('chat/:id/status', [controllers.Conversations, 'status'])
+      .where('id', router.matchers.number())
   })
   .use(middleware.auth())

@@ -21,5 +21,15 @@
     @if(message.isEdited && !message.isDeleted)
       <span>· modifié</span>
     @end
+    @if(message.status && !message.isDeleted)
+      <span data-status data-state="{{ message.status }}" class="inline-flex items-center" aria-label="Statut du message">
+        <span class="st-one">
+          @svg('lucide:check', { width: 15, height: 15 })
+        </span>
+        <span class="st-two">
+          @svg('lucide:check-check', { width: 15, height: 15 })
+        </span>
+      </span>
+    @end
   </div>
 </div>

@@ -11,14 +11,18 @@ export default class ConversationsController {
   /** Liste des conversations, aucune discussion ouverte. */
   async index({ auth, view }: HttpContext) {
     const me = auth.use('web').getUserOrFail()
-    const conversations = await new ConversationService().listFor(me)
+    const service = new ConversationService()
+    await service.markAllDelivered(me)
+    const conversations = await service.listFor(me)
     return view.render('pages/chat/index', { conversations, currentId: null, focus: false, me })
   }
 
   /** Seulement la liste, en HTML : sert à la mettre à jour en temps réel. */
   async list({ auth, request, view }: HttpContext) {
     const me = auth.use('web').getUserOrFail()
-    const conversations = await new ConversationService().listFor(me)
+    const service = new ConversationService()
+    await service.markAllDelivered(me)
+    const conversations = await service.listFor(me)
     const currentId = Number(request.input('current')) || null
     return view.render('partials/chat/conversation_list', { conversations, currentId })
   }
@@ -53,7 +57,6 @@ export default class ConversationsController {
     return view.render(template, { users })
   }
 
-
   /** Démarre (ou rouvre) une conversation privée. */
   async store({ auth, request, response }: HttpContext) {
     const me = auth.use('web').getUserOrFail()
@@ -68,12 +71,15 @@ export default class ConversationsController {
     return response.redirect(`/chat/${conversation.id}`)
   }
 
-  /** Une discussion ouverte, avec ses messages (et les infos du groupe si c'en est un). */
+  /** Une discussion ouverte : elle est marquée comme lue. */
   async show({ auth, params, view }: HttpContext) {
     const me = auth.use('web').getUserOrFail()
     const service = new ConversationService()
 
     const conversation = await service.findForMember(me, params.id)
+    await service.markAllDelivered(me)
+    await service.markRead(me, conversation)
+
     const [conversations, messages] = await Promise.all([
       service.listFor(me),
       service.messagesOf(conversation, me),
@@ -103,5 +109,22 @@ export default class ConversationsController {
       me,
       focus: true,
     })
+  }
+
+  /** Le navigateur signale que la conversation ouverte a été lue. */
+  async read({ auth, params, response }: HttpContext) {
+    const me = auth.use('web').getUserOrFail()
+    const service = new ConversationService()
+    const conversation = await service.findForMember(me, params.id)
+    await service.markRead(me, conversation)
+    return response.noContent()
+  }
+
+  /** Les marque-pages « reçu » et « lu » des autres membres (pour les coches). */
+  async status({ auth, params, response }: HttpContext) {
+    const me = auth.use('web').getUserOrFail()
+    const service = new ConversationService()
+    const conversation = await service.findForMember(me, params.id)
+    return response.json(await service.statusCursors(conversation, me))
   }
 }

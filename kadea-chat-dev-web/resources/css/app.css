@@ -106,3 +106,19 @@
     outline: none;
   }
 }
+
+/* Coches des messages : une = envoyé, deux grises = reçu, deux colorées = lu */
+[data-status] .st-one,
+[data-status] .st-two {
+  display: none;
+}
+[data-status][data-state='sent'] .st-one {
+  display: inline-flex;
+}
+[data-status][data-state='delivered'] .st-two,
+[data-status][data-state='read'] .st-two {
+  display: inline-flex;
+}
+[data-status][data-state='read'] {
+  color: var(--accent-ink);
+}

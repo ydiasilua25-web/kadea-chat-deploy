@@ -38,6 +38,8 @@ export type ScannedRoutes = {
     'groups.store': { paramsTuple?: []; params?: {} }
     'groups.add_members': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'groups.remove_member': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'userId': ParamValue} }
+    'conversations.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'conversations.status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
@@ -56,6 +58,7 @@ export type ScannedRoutes = {
     'conversations.users': { paramsTuple?: []; params?: {} }
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'messages.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
+    'conversations.status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
@@ -74,6 +77,7 @@ export type ScannedRoutes = {
     'conversations.users': { paramsTuple?: []; params?: {} }
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'messages.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
+    'conversations.status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   POST: {
     'new_account.store': { paramsTuple?: []; params?: {} }
@@ -94,6 +98,7 @@ export type ScannedRoutes = {
     'groups.store': { paramsTuple?: []; params?: {} }
     'groups.add_members': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'groups.remove_member': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'userId': ParamValue} }
+    'conversations.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

@@ -82,7 +82,7 @@ function setupUserDialog(dialog, url) {
       results.innerHTML = await response.text()
       loaded = true
       filter()
-    } catch {
+    } catch (error) {
       results.textContent = 'Impossible de charger les utilisateurs. Réessaie.'
     }
   }
@@ -278,6 +278,45 @@ if (aside) {
     }
   }
 
+    /** Met à jour les coches (envoyé, reçu, lu) des messages que j'ai envoyés. */
+  async function refreshStatuses() {
+    if (!conversationId || !box) return
+    try {
+      const response = await fetch(`/chat/${conversationId}/status`, {
+        headers: { 'X-Requested-With': 'fetch', Accept: 'application/json' },
+      })
+      if (!response.ok) return
+      const { minDelivered, minRead } = await response.json()
+
+      box.querySelectorAll('[data-own="1"][data-message-id]').forEach((wrapper) => {
+        const status = wrapper.querySelector('[data-status]')
+        if (!status) return
+        const id = Number(wrapper.dataset.messageId)
+        status.dataset.state = id <= minRead ? 'read' : id <= minDelivered ? 'delivered' : 'sent'
+      })
+    } catch {
+      /* ignoré */
+    }
+  }
+
+  let readTimer = null
+
+  /** Dit au serveur que la conversation ouverte a été lue (seulement si l'onglet est visible). */
+  function markRead() {
+    if (!conversationId || document.visibilityState !== 'visible') return
+    clearTimeout(readTimer)
+    readTimer = setTimeout(() => {
+      post(`/chat/${conversationId}/read`).catch(() => {})
+    }, 300)
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      markRead()
+      refreshStatuses()
+    }
+  })
+
   /* --- Temps réel : un canal privé par utilisateur --- */
   const transmit = new Transmit({ baseUrl: window.location.origin })
   const subscription = transmit.subscription(`users/${me}`)
@@ -292,7 +331,14 @@ if (aside) {
       window.location.assign('/chat')
       return
     }
-    if (event.messageId) loadMessage(event.messageId)
+    // Un marque-page « reçu » ou « lu » a avancé : on met les coches à jour.
+    if (event.status) {
+      refreshStatuses()
+      return
+    }
+    if (event.messageId) {
+      loadMessage(event.messageId).then(markRead)
+    }
   })
 
   /* --- Mode « modification » du champ d'écriture --- */
