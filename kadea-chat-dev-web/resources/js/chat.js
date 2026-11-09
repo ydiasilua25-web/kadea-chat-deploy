@@ -175,6 +175,30 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') closePanels()
 })
 
+/* ---------- Recherche dans la liste des conversations ---------- */
+function applyConversationFilter() {
+  const input = document.querySelector('[data-conversation-search]')
+  const list = document.getElementById('conversation-list')
+  if (!input || !list) return
+
+  const term = normalize(input.value.trim())
+  let visible = 0
+  list.querySelectorAll('[data-conv]').forEach((row) => {
+    const match = normalize(row.dataset.search).includes(term)
+    row.style.display = match ? '' : 'none'
+    if (match) visible++
+  })
+
+  const empty = document.querySelector('[data-conversation-empty]')
+  if (empty) empty.style.display = term !== '' && visible === 0 ? 'block' : 'none'
+}
+
+document.addEventListener('input', (event) => {
+  if (event.target instanceof Element && event.target.matches('[data-conversation-search]')) {
+    applyConversationFilter()
+  }
+})
+
 /* ---------- Page de chat : temps réel, envoi, menu des messages ---------- */
 const aside = document.querySelector('[data-chat-me]')
 
@@ -208,7 +232,10 @@ if (aside) {
         const response = await fetch(`/chat/list?current=${conversationId ?? ''}`, {
           headers: { 'X-Requested-With': 'fetch' },
         })
-        if (response.ok) list.innerHTML = await response.text()
+        if (response.ok) {
+          list.innerHTML = await response.text()
+          applyConversationFilter()
+        }
       } catch {
         /* réseau coupé : on réessaiera au prochain événement */
       }
@@ -402,17 +429,17 @@ if (aside) {
       }
 
       const url = `/chat/${conversationId}/messages/${wrapper.dataset.messageId}/${action}`
-      try {
+        try {
         const response = await post(url)
-        if (!response.ok) throw new Error('Action impossible')
+        if (!response.ok) throw new Error(`Action impossible (code ${response.status})`)
         if (action === 'delete') {
           upsert(await response.text())
         } else {
           wrapper.remove()
         }
         refreshList()
-      } catch {
-        showToast('Action impossible. Réessaie.')
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : 'Action impossible. Réessaie.')
       }
     })
   }
