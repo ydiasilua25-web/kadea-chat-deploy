@@ -4,6 +4,7 @@
  */
 
 export const controllers = {
+  Attachments: () => import('#controllers/attachments_controller'),
   Conversations: () => import('#controllers/conversations_controller'),
   ForgotPassword: () => import('#controllers/forgot_password_controller'),
   Groups: () => import('#controllers/groups_controller'),

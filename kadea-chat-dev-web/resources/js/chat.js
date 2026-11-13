@@ -2,6 +2,8 @@ import { Transmit } from '@adonisjs/transmit-client'
 
 const COARSE = window.matchMedia('(pointer: coarse)').matches
 const LONG_PRESS_MS = 2000 // appui long sur téléphone : 2 secondes
+const IMAGE_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp']
+const DOC_EXT = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv']
 const EMOJIS = [
   '😀', '😂', '🤣', '😊', '😍', '🥰', '😘', '😎', '🤔', '😅',
   '😭', '😡', '😴', '🤗', '😇', '🥳', '😢', '😮', '😉', '🙂',
@@ -15,9 +17,19 @@ function showToast(text) {
   toast.textContent = text
   toast.setAttribute('role', 'status')
   toast.className =
-    'fixed bottom-24 left-1/2 z-[60] -translate-x-1/2 rounded-full bg-pine px-5 py-2.5 text-sm text-pine-fg shadow-lg md:bottom-10'
+    'fixed bottom-24 left-1/2 z-[60] w-max max-w-[90vw] -translate-x-1/2 rounded-2xl bg-pine px-5 py-2.5 text-center text-sm text-pine-fg shadow-lg md:bottom-10'
   document.body.append(toast)
-  setTimeout(() => toast.remove(), 2200)
+  setTimeout(() => toast.remove(), 3500)
+}
+
+/** Texte d'erreur lisible pour une réponse refusée par le serveur. */
+async function errorText(response) {
+  const type = response.headers.get('content-type') || ''
+  if (type.includes('text/plain')) {
+    const text = (await response.text()).trim()
+    if (text) return text.slice(0, 220)
+  }
+  return `Action refusée (code ${response.status}). Recharge la page si le problème continue.`
 }
 
 /* ---------- Panneaux (emoji, joindre) ---------- */
@@ -82,7 +94,7 @@ function setupUserDialog(dialog, url) {
       results.innerHTML = await response.text()
       loaded = true
       filter()
-    } catch (error) {
+    } catch {
       results.textContent = 'Impossible de charger les utilisateurs. Réessaie.'
     }
   }
@@ -150,6 +162,18 @@ document.addEventListener('click', (event) => {
     return
   }
 
+  // Joindre un fichier : ouvre le sélecteur de fichiers du navigateur.
+  const pick = target.closest('[data-pick]')
+  if (pick) {
+    const input = document.querySelector('[data-file-input]')
+    if (input) {
+      input.accept = pick.dataset.accept || ''
+      input.click()
+    }
+    closePanels()
+    return
+  }
+
   const soon = target.closest('[data-soon]')
   if (soon) {
     showToast(soon.dataset.soon || 'Bientôt disponible')
@@ -199,7 +223,7 @@ document.addEventListener('input', (event) => {
   }
 })
 
-/* ---------- Page de chat : temps réel, envoi, menu des messages ---------- */
+/* ---------- Page de chat : temps réel, envoi, fichiers, menu des messages ---------- */
 const aside = document.querySelector('[data-chat-me]')
 
 if (aside) {
@@ -209,12 +233,16 @@ if (aside) {
   const composer = document.querySelector('form[data-composer]')
   const field = composer?.querySelector('input[name="content"]')
   const banner = composer?.querySelector('[data-edit-banner]')
+  const fileInput = composer?.querySelector('[data-file-input]')
+  const chip = composer?.querySelector('[data-file-chip]')
   const menu = document.getElementById('message-menu')
   let refreshTimer = null
+  let readTimer = null
   let pressTimer = null
   let menuTarget = null
+  let editing = false
 
-  const csrfToken = () => composer?.querySelector('input[name="_csrf"]')?.value ?? ''
+  const csrfToken = () => document.querySelector('input[name="_csrf"]')?.value ?? ''
 
   function post(url) {
     const data = new FormData()
@@ -278,7 +306,7 @@ if (aside) {
     }
   }
 
-    /** Met à jour les coches (envoyé, reçu, lu) des messages que j'ai envoyés. */
+  /** Met à jour les coches (envoyé, reçu, lu) des messages que j'ai envoyés. */
   async function refreshStatuses() {
     if (!conversationId || !box) return
     try {
@@ -298,8 +326,6 @@ if (aside) {
       /* ignoré */
     }
   }
-
-  let readTimer = null
 
   /** Dit au serveur que la conversation ouverte a été lue (seulement si l'onglet est visible). */
   function markRead() {
@@ -341,17 +367,60 @@ if (aside) {
     }
   })
 
+  /* --- Fichier joint --- */
+  function clearFile() {
+    if (fileInput) fileInput.value = ''
+    if (chip) chip.style.display = 'none'
+  }
+
+  fileInput?.addEventListener('change', () => {
+    const file = fileInput.files?.[0]
+    if (!file) {
+      clearFile()
+      return
+    }
+
+    const extension = (file.name.split('.').pop() || '').toLowerCase()
+    const isImage = IMAGE_EXT.includes(extension)
+
+    if (!isImage && !DOC_EXT.includes(extension)) {
+      clearFile()
+      showToast('Type de fichier non autorisé.')
+      return
+    }
+    if (file.size > (isImage ? 5 : 10) * 1024 * 1024) {
+      clearFile()
+      showToast(`Fichier trop lourd : ${isImage ? '5' : '10'} Mo maximum.`)
+      return
+    }
+    if (editing) {
+      clearFile()
+      showToast('Termine ou annule la modification avant de joindre un fichier.')
+      return
+    }
+
+    chip.querySelector('[data-file-name]').textContent = file.name
+    chip.style.display = 'flex'
+    field?.focus()
+  })
+
+  chip?.querySelector('[data-file-clear]')?.addEventListener('click', clearFile)
+
   /* --- Mode « modification » du champ d'écriture --- */
   function exitEdit() {
     if (!composer) return
+    editing = false
     composer.action = composer.dataset.defaultAction
     composer.reset()
+    clearFile()
     if (banner) banner.style.display = 'none'
   }
 
   function startEdit(wrapper) {
     if (!composer || !field) return
     const bubble = wrapper.querySelector('[data-bubble]')
+    editing = true
+    clearFile()
     composer.action = `/chat/${conversationId}/messages/${wrapper.dataset.messageId}/edit`
     field.value = bubble ? bubble.textContent.trim() : ''
     if (banner) banner.style.display = 'flex'
@@ -366,8 +435,13 @@ if (aside) {
     if (!(form instanceof HTMLFormElement) || !form.hasAttribute('data-fetch')) return
     submitEvent.preventDefault()
 
+    const isComposer = form.hasAttribute('data-composer')
+    const hasFile = Boolean(fileInput?.files?.length)
+    if (isComposer && !field.value.trim() && !hasFile) return
+
     const button = form.querySelector('button[type="submit"]')
     button?.setAttribute('disabled', '')
+    if (hasFile) showToast('Envoi du fichier…')
 
     try {
       const response = await fetch(form.action, {
@@ -375,10 +449,15 @@ if (aside) {
         body: new FormData(form),
         headers: { 'X-Requested-With': 'fetch' },
       })
+
+      if (response.status >= 400 && response.status < 500) {
+        showToast(await errorText(response))
+        return
+      }
       if (!response.ok) throw new Error('Envoi impossible')
 
       upsert(await response.text())
-      if (form.hasAttribute('data-composer')) {
+      if (isComposer) {
         exitEdit()
         closePanels()
         field?.focus()
@@ -386,13 +465,17 @@ if (aside) {
       }
       refreshList()
     } catch {
-      form.submit()
+      if (hasFile) {
+        showToast("Envoi impossible. Vérifie ta connexion et réessaie.")
+      } else {
+        form.submit()
+      }
     } finally {
       button?.removeAttribute('disabled')
     }
   })
 
-  /* --- Menu des messages : clic (ordinateur) ou appui long de 2 s (téléphone) --- */
+  /* --- Menu des messages : clic (ordinateur), appui long de 2 s ou bouton « … » (téléphone) --- */
   function closeMenu() {
     if (menu) menu.style.display = 'none'
     menuTarget = null
@@ -403,11 +486,12 @@ if (aside) {
     menuTarget = wrapper
     const own = wrapper.dataset.own === '1'
     const deleted = wrapper.dataset.deleted === '1'
+    const hasText = wrapper.dataset.hasText === '1'
     const show = (name, visible) => {
-    const item = menu.querySelector(`[data-action="${name}"]`)
-    if (item) item.style.display = visible ? 'flex' : 'none'
+      const item = menu.querySelector(`[data-action="${name}"]`)
+      if (item) item.style.display = visible ? 'flex' : 'none'
     }
-    show('edit', own && !deleted)
+    show('edit', own && !deleted && hasText)
     show('delete', own && !deleted)
     show('hide', true)
 
@@ -424,6 +508,11 @@ if (aside) {
 
   if (box && menu) {
     box.addEventListener('click', (event) => {
+      const menuButton = event.target.closest('[data-menu-button]')
+      if (menuButton) {
+        openMenu(menuButton.closest('[data-message-id]'), event.clientX, event.clientY)
+        return
+      }
       if (COARSE) return
       const bubble = event.target.closest('[data-bubble]')
       if (!bubble) return
@@ -455,7 +544,13 @@ if (aside) {
     }
 
     document.addEventListener('click', (event) => {
-      if (!menu.contains(event.target) && !event.target.closest('[data-bubble]')) closeMenu()
+      if (
+        !menu.contains(event.target) &&
+        !event.target.closest('[data-bubble]') &&
+        !event.target.closest('[data-menu-button]')
+      ) {
+        closeMenu()
+      }
     })
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') closeMenu()
@@ -475,17 +570,20 @@ if (aside) {
       }
 
       const url = `/chat/${conversationId}/messages/${wrapper.dataset.messageId}/${action}`
-        try {
+      try {
         const response = await post(url)
-        if (!response.ok) throw new Error(`Action impossible (code ${response.status})`)
+        if (!response.ok) {
+          showToast(await errorText(response))
+          return
+        }
         if (action === 'delete') {
           upsert(await response.text())
         } else {
           wrapper.remove()
         }
         refreshList()
-      } catch (error) {
-        showToast(error instanceof Error ? error.message : 'Action impossible. Réessaie.')
+      } catch {
+        showToast('Action impossible. Vérifie ta connexion.')
       }
     })
   }

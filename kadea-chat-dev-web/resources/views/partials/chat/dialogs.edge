@@ -37,8 +37,25 @@
     </div>
 
     <div class="flex flex-col items-center gap-1 px-5 py-6 text-center">
-      <span class="mb-2 grid size-24 place-items-center rounded-full bg-accent-soft text-3xl font-semibold text-accent-ink">{{ me.initials }}</span>
-      <p class="text-lg font-medium">{{ me.fullName }}</p>
+      @if(me.avatarPath)
+        <img src="{{ me.avatarPath }}" alt="Ma photo de profil" class="mb-2 size-24 rounded-full object-cover" />
+      @else
+        <span class="mb-2 grid size-24 place-items-center rounded-full bg-accent-soft text-3xl font-semibold text-accent-ink">{{ me.initials }}</span>
+      @end
+      <form method="POST" action="/profile/avatar" enctype="multipart/form-data" class="text-sm">
+        {{ csrfField() }}
+        <label class="cursor-pointer font-medium underline">
+          Changer la photo
+          <input type="file" name="avatar" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="this.form.submit()" />
+        </label>
+      </form>
+      @if(me.avatarPath)
+        <form method="POST" action="/profile/avatar/remove">
+          {{ csrfField() }}
+          <button type="submit" class="text-xs text-muted underline">Retirer la photo</button>
+        </form>
+      @end
+      <p class="mt-2 text-lg font-medium">{{ me.fullName }}</p>
       <p class="text-sm text-muted">{{ me.email }}</p>
       <p class="mt-1 text-xs text-subtle">Membre depuis le {{ me.createdAt.toFormat('dd/MM/yyyy') }}</p>
     </div>

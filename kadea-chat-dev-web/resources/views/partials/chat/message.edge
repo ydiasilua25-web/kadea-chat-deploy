@@ -2,17 +2,36 @@
   data-message-id="{{ message.id }}"
   data-own="{{ message.userId === me.id ? '1' : '0' }}"
   data-deleted="{{ message.isDeleted ? '1' : '0' }}"
+  data-has-text="{{ message.hasText ? '1' : '0' }}"
   class="flex max-w-[85%] flex-col gap-1 md:max-w-[65%] {{ message.userId === me.id ? 'items-end self-end' : 'self-start' }}"
 >
   @if(isGroup && message.userId !== me.id)
     <span class="px-1 text-xs text-muted">{{ message.authorName }}</span>
   @end
 
+  @if(message.attachment && !message.isDeleted)
+    @if(message.attachment.isImage)
+      <a href="{{ message.attachment.url }}" target="_blank" rel="noopener" class="block overflow-hidden rounded-2xl">
+        <img src="{{ message.attachment.url }}" alt="{{ message.attachment.name }}" loading="lazy" class="max-h-72 max-w-full rounded-2xl object-cover" />
+      </a>
+    @else
+      <a href="{{ message.attachment.url }}?download=1" class="flex w-full min-w-48 items-center gap-3 rounded-2xl bg-panel px-4 py-3 text-ink hover:opacity-90">
+        <span class="text-accent-ink">
+          @svg('lucide:file-text', { width: 22, height: 22 })
+        </span>
+        <span class="min-w-0 flex-1 text-left">
+          <span class="block truncate text-sm font-medium">{{ message.attachment.name }}</span>
+          <span class="block text-xs text-muted">{{ message.attachment.size }} · Télécharger</span>
+        </span>
+      </a>
+    @end
+  @end
+
   @if(message.isDeleted)
     <p data-bubble class="cursor-pointer rounded-2xl border border-dashed border-line-2 px-4 py-2.5 text-sm italic text-muted">Ce message a été supprimé</p>
-  @elseif(message.userId === me.id)
+  @elseif(message.hasText && message.userId === me.id)
     <p data-bubble class="cursor-pointer whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-pine px-4 py-2.5 text-pine-fg">{{ message.content }}</p>
-  @else
+  @elseif(message.hasText)
     <p data-bubble class="cursor-pointer whitespace-pre-wrap break-words rounded-2xl rounded-bl-md bg-card px-4 py-2.5 shadow-sm">{{ message.content }}</p>
   @end
 
@@ -30,6 +49,11 @@
           @svg('lucide:check-check', { width: 15, height: 15 })
         </span>
       </span>
+    @end
+    @if(message.attachment && !message.isDeleted)
+      <button type="button" data-menu-button aria-label="Options du message" class="grid size-6 place-items-center rounded-full text-muted hover:bg-panel hover:text-ink">
+        @svg('lucide:ellipsis', { width: 16, height: 16 })
+      </button>
     @end
   </div>
 </div>

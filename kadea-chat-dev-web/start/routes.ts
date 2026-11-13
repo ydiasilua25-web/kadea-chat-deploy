@@ -60,6 +60,8 @@ router
 
     router.post('profile/name', [controllers.Profile, 'updateName'])
     router.post('profile/password', [controllers.Profile, 'updatePassword'])
+    router.post('profile/avatar', [controllers.Profile, 'updateAvatar'])
+    router.post('profile/avatar/remove', [controllers.Profile, 'removeAvatar'])
 
     router.get('chat', [controllers.Conversations, 'index'])
     router.get('chat/new', [controllers.Conversations, 'create'])
@@ -104,5 +106,10 @@ router
     router
       .get('chat/:id/status', [controllers.Conversations, 'status'])
       .where('id', router.matchers.number())
+    
+    router
+      .get('chat/:id/files/:attachmentId', [controllers.Attachments, 'show'])
+      .where('id', router.matchers.number())
+      .where('attachmentId', router.matchers.number())
   })
   .use(middleware.auth())

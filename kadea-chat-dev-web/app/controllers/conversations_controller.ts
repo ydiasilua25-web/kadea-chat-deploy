@@ -31,7 +31,8 @@ export default class ConversationsController {
   async create({ auth, request, view }: HttpContext) {
     const me = auth.use('web').getUserOrFail()
     const service = new ConversationService()
-    const term = String(request.input('q', '')).trim()
+    const rawTerm = request.input('q')
+    const term = typeof rawTerm === 'string' ? rawTerm.trim() : ''
 
     const [conversations, users] = await Promise.all([
       service.listFor(me),

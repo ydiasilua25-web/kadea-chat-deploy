@@ -24,6 +24,8 @@ export type ScannedRoutes = {
     'welcome.show': { paramsTuple?: []; params?: {} }
     'profile.update_name': { paramsTuple?: []; params?: {} }
     'profile.update_password': { paramsTuple?: []; params?: {} }
+    'profile.update_avatar': { paramsTuple?: []; params?: {} }
+    'profile.remove_avatar': { paramsTuple?: []; params?: {} }
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.create': { paramsTuple?: []; params?: {} }
     'conversations.list': { paramsTuple?: []; params?: {} }
@@ -40,6 +42,7 @@ export type ScannedRoutes = {
     'groups.remove_member': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'userId': ParamValue} }
     'conversations.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'conversations.status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'attachments.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'attachmentId': ParamValue} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
@@ -59,6 +62,7 @@ export type ScannedRoutes = {
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'messages.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
     'conversations.status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'attachments.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'attachmentId': ParamValue} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
@@ -78,6 +82,7 @@ export type ScannedRoutes = {
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'messages.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
     'conversations.status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'attachments.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'attachmentId': ParamValue} }
   }
   POST: {
     'new_account.store': { paramsTuple?: []; params?: {} }
@@ -90,6 +95,8 @@ export type ScannedRoutes = {
     'unsubscribe': { paramsTuple?: []; params?: {} }
     'profile.update_name': { paramsTuple?: []; params?: {} }
     'profile.update_password': { paramsTuple?: []; params?: {} }
+    'profile.update_avatar': { paramsTuple?: []; params?: {} }
+    'profile.remove_avatar': { paramsTuple?: []; params?: {} }
     'conversations.store': { paramsTuple?: []; params?: {} }
     'messages.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'messages.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }

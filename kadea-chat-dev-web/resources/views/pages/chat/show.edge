@@ -10,6 +10,7 @@
           <a href="/chat" aria-label="Retour aux conversations" class="grid size-10 place-items-center rounded-full text-muted hover:bg-panel md:hidden">
             @svg('lucide:arrow-left', { width: 20, height: 20 })
           </a>
+
           @if(current.isGroup)
             <button type="button" data-open="group-info" class="flex min-w-0 flex-1 items-center gap-3 text-left">
               <span class="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ current.initials }}</span>
@@ -19,7 +20,11 @@
               </span>
             </button>
           @else
-            <span class="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ current.initials }}</span>
+            @if(current.avatarUrl)
+              <img src="{{ current.avatarUrl }}" alt="" class="size-10 shrink-0 rounded-full object-cover" />
+            @else
+              <span class="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ current.initials }}</span>
+            @end
             <p class="truncate font-medium">{{ current.title }}</p>
           @end
         </header>
@@ -34,12 +39,23 @@
         <form
           method="POST"
           action="/chat/{{ current.id }}/messages"
+          enctype="multipart/form-data"
           data-fetch
           data-composer
           data-default-action="/chat/{{ current.id }}/messages"
           class="relative px-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] md:px-6"
         >
           {{ csrfField() }}
+
+          <input type="file" name="file" data-file-input class="hidden" />
+
+          <div data-file-chip style="display: none" class="mb-2 items-center justify-between gap-3 rounded-2xl bg-panel px-4 py-2 text-sm">
+            <span class="flex min-w-0 items-center gap-2 text-muted">
+              @svg('lucide:paperclip', { width: 16, height: 16 })
+              <span data-file-name class="truncate"></span>
+            </span>
+            <button type="button" data-file-clear class="underline">Retirer</button>
+          </div>
 
           <div data-edit-banner style="display: none" class="mb-2 items-center justify-between rounded-2xl bg-panel px-4 py-2 text-sm">
             <span class="text-muted">Modification du message</span>
@@ -57,7 +73,6 @@
               <input
                 type="text"
                 name="content"
-                required
                 maxlength="2000"
                 autocomplete="off"
                 aria-label="Écrire un message"
@@ -71,17 +86,17 @@
           </div>
 
           <div id="attach-panel" data-panel style="display: none" class="absolute bottom-full left-4 z-40 mb-2 w-64 rounded-2xl bg-card p-2 shadow-2xl ring-1 ring-line-2 md:left-6">
-            <button type="button" data-soon="Bientôt disponible" class="flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left hover:bg-panel">
+            <button type="button" data-pick data-accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv" class="flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left hover:bg-panel">
               <span style="color: #7c5cff">
                 @svg('lucide:file-text', { width: 20, height: 20 })
               </span>
               Document
             </button>
-            <button type="button" data-soon="Bientôt disponible" class="flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left hover:bg-panel">
+            <button type="button" data-pick data-accept="image/jpeg,image/png,image/gif,image/webp" class="flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left hover:bg-panel">
               <span style="color: #2f80ed">
                 @svg('lucide:image', { width: 20, height: 20 })
               </span>
-              Photos et vidéos
+              Photos
             </button>
             <button type="button" data-soon="Bientôt disponible" class="flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left hover:bg-panel">
               <span style="color: #e8467c">
@@ -137,6 +152,7 @@
   </div>
 
   @include('partials/chat/dialogs')
+
   @if(current.isGroup)
     @include('partials/chat/group_dialog')
   @end

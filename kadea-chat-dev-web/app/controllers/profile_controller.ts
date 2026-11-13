@@ -1,4 +1,5 @@
 import User from '#models/user'
+import StorageService, { MAX_AVATAR_BYTES } from '#services/storage_service'
 import type { HttpContext } from '@adonisjs/core/http'
 import vine, { errors } from '@vinejs/vine'
 
@@ -51,6 +52,39 @@ export default class ProfileController {
         'Le nouveau mot de passe doit contenir de 8 à 32 caractères et être confirmé.'
       )
     }
+    return response.redirect().back()
+  }
+
+  /** Photo de profil : JPG, PNG ou WEBP, 2 Mo au maximum. */
+  async updateAvatar({ auth, request, response, session, logger }: HttpContext) {
+    const user = auth.use('web').getUserOrFail()
+    const file = request.file('avatar', { size: '2mb', extnames: ['jpg', 'jpeg', 'png', 'webp'] })
+
+    if (!file) {
+      session.flash('error', 'Choisis une image.')
+      return response.redirect().back()
+    }
+    if (!file.isValid || file.size > MAX_AVATAR_BYTES) {
+      session.flash('error', 'Image refusée : JPG, PNG ou WEBP, 2 Mo au maximum.')
+      return response.redirect().back()
+    }
+
+    try {
+      user.avatarPath = await new StorageService().uploadAvatar(file.tmpPath!, user.id)
+      await user.save()
+      session.flash('success', 'Ta photo de profil a été mise à jour.')
+    } catch (error) {
+      logger.error({ err: error }, "Échec de l'envoi de la photo de profil")
+      session.flash('error', "Impossible d'enregistrer la photo pour le moment.")
+    }
+    return response.redirect().back()
+  }
+
+  async removeAvatar({ auth, response, session }: HttpContext) {
+    const user = auth.use('web').getUserOrFail()
+    user.avatarPath = null
+    await user.save()
+    session.flash('success', 'Ta photo de profil a été retirée.')
     return response.redirect().back()
   }
 }

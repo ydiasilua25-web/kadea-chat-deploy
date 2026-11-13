@@ -3,7 +3,11 @@
 @end
 @each(item in conversations)
   <a href="/chat/{{ item.id }}" data-conv data-search="{{ item.title }} {{ item.preview }}" class="flex items-center gap-3 px-5 py-3 transition hover:bg-panel {{ item.id === currentId ? 'bg-panel' : '' }}">
-    <span class="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ item.initials }}</span>
+    @if(item.avatarUrl)
+      <img src="{{ item.avatarUrl }}" alt="" class="size-11 shrink-0 rounded-full object-cover" />
+    @else
+      <span class="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink">{{ item.initials }}</span>
+    @end
     <span class="min-w-0 flex-1">
       <span class="block truncate {{ item.unread > 0 && item.id !== currentId ? 'font-semibold' : 'font-medium' }}">{{ item.title }}</span>
       <span class="block truncate text-sm {{ item.deleted ? 'italic' : '' }} {{ item.unread > 0 && item.id !== currentId ? 'text-ink' : 'text-muted' }}">{{ item.preview }}</span>

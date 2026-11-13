@@ -14,5 +14,11 @@
   <button type="button" data-soon="Les appels arrivent bientôt." aria-label="Appels" class="grid size-11 place-items-center rounded-2xl text-muted transition hover:bg-card hover:text-ink">
     @svg('lucide:phone', { width: 22, height: 22 })
   </button>
-  <button type="button" data-open="profile-dialog" aria-label="Mon profil" class="grid size-11 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent-ink md:mt-auto">{{ me.initials }}</button>
+  <button type="button" data-open="profile-dialog" aria-label="Mon profil" class="grid size-11 place-items-center overflow-hidden rounded-full bg-accent-soft text-sm font-semibold text-accent-ink md:mt-auto">
+    @if(me.avatarPath)
+      <img src="{{ me.avatarPath }}" alt="" class="size-full object-cover" />
+    @else
+      {{ me.initials }}
+    @end
+  </button>
 </nav>

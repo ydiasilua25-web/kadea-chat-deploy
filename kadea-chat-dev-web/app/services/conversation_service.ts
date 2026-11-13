@@ -6,6 +6,7 @@ import ConversationMember from '#models/conversation_member'
 import Message from '#models/message'
 import MessageHide from '#models/message_hide'
 import User from '#models/user'
+import { formatBytes } from '#services/storage_service'
 
 /** Fuseau d'affichage des heures. À changer ici si besoin. */
 const APP_ZONE = 'Africa/Kinshasa'
@@ -57,7 +58,7 @@ export default class ConversationService {
       .firstOrFail()
   }
 
-  /** La liste de gauche : dernier message visible, heure et nombre de messages non lus. */
+  /** La liste de gauche : dernier message visible, heure, non lus, photo de l'interlocuteur. */
   async listFor(user: User) {
     const conversations = await Conversation.query()
       .whereHas('members', (query) => query.where('userId', user.id))
@@ -70,6 +71,7 @@ export default class ConversationService {
           .whereNotIn('id', (hidden) => {
             hidden.from('message_hides').where('user_id', user.id).select('message_id')
           })
+          .preload('attachments')
           .orderBy('id', 'desc')
           .first()
 
@@ -98,7 +100,9 @@ export default class ConversationService {
 
         let preview = 'Aucun message'
         if (last) {
-          const text = last.isDeleted ? 'Ce message a été supprimé' : (last.content ?? '')
+          const file = last.attachments?.[0]
+          const kind = file ? (file.mimeType.startsWith('image/') ? 'Photo' : 'Document') : ''
+          const text = last.isDeleted ? 'Ce message a été supprimé' : (last.content ?? kind)
           preview = last.userId === user.id && !last.isDeleted ? `Toi : ${text}` : text
         }
 
@@ -108,6 +112,8 @@ export default class ConversationService {
           memberCount: conversation.members.length,
           title,
           initials: initialsOf(title),
+          avatarUrl: conversation.isGroup ? null : (other?.user.avatarPath ?? null),
+          otherUserId: conversation.isGroup ? null : (other?.userId ?? null),
           preview,
           deleted: last?.isDeleted ?? false,
           unread,
@@ -120,17 +126,28 @@ export default class ConversationService {
     return items.sort((a, b) => b.sortKey - a.sortKey)
   }
 
-  /** Un message prêt à être affiché (l'auteur doit être chargé). */
+   /** Un message prêt à être affiché (auteur et pièces jointes chargés). */
   presentMessage(message: Message, status: MessageStatus | null = null) {
+    const file = message.attachments?.[0]
     return {
       id: message.id,
       conversationId: message.conversationId,
       userId: message.userId,
       authorName: message.author.fullName ?? message.author.email,
       content: message.content,
+      hasText: Boolean(message.content),
       isDeleted: Boolean(message.deletedAt),
       isEdited: Boolean(message.editedAt),
       status,
+      attachment: file
+        ? {
+            id: file.id,
+            name: file.originalName,
+            size: formatBytes(file.sizeBytes),
+            isImage: file.mimeType.startsWith('image/'),
+            url: `/chat/${message.conversationId}/files/${file.id}`,
+          }
+        : null,
       time: message.createdAt.setZone(APP_ZONE).toFormat('HH:mm'),
     }
   }
@@ -176,6 +193,7 @@ export default class ConversationService {
         hidden.from('message_hides').where('user_id', user.id).select('message_id')
       })
       .preload('author')
+      .preload('attachments')
       .orderBy('id', 'desc')
       .limit(200)
 
@@ -189,6 +207,7 @@ export default class ConversationService {
       .where('id', messageId)
       .where('conversationId', conversation.id)
       .preload('author')
+      .preload('attachments')
       .firstOrFail()
 
     return this.presentFor(message, conversation, me)
