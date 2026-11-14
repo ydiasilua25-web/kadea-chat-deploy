@@ -4,6 +4,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import vine from '@vinejs/vine'
 import { DateTime } from 'luxon'
 import Attachment from '#models/attachment'
+import BlockService from '#services/block_service'
 import StorageService, {
   ALLOWED_EXTENSIONS,
   MAX_DOCUMENT_BYTES,
@@ -30,6 +31,18 @@ export default class MessagesController {
     const me = auth.use('web').getUserOrFail()
     const service = new ConversationService()
     const conversation = await service.findForMember(me, params.id)
+    
+    // Conversation privée : on n'écrit pas à quelqu'un qui nous a bloqué, ni à quelqu'un qu'on a bloqué.
+    const peerId = await service.privatePeerId(conversation, me)
+    if (peerId) {
+      const block = await new BlockService().state(me, peerId)
+      if (block.iBlocked) {
+        return response.forbidden('Tu as bloqué cette personne. Débloque-la pour lui écrire.')
+      }
+      if (block.blockedMe) {
+        return response.forbidden("Impossible d'envoyer ce message dans cette conversation car vous avez été bloqué.")
+      }
+    }
 
     const rawContent = request.input('content')
     const content = typeof rawContent === 'string' ? rawContent.trim() : ''

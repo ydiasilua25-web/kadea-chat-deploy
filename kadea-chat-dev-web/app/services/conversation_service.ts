@@ -395,4 +395,14 @@ export default class ConversationService {
       removed: true,
     })
   }
+  
+  /** L'autre personne d'une conversation privée (null pour un groupe). */
+  async privatePeerId(conversation: Conversation, me: User) {
+    if (conversation.isGroup) return null
+    const member = await ConversationMember.query()
+      .where('conversationId', conversation.id)
+      .whereNot('userId', me.id)
+      .first()
+    return member?.userId ?? null
+  }
 }

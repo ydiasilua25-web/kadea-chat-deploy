@@ -111,5 +111,11 @@ router
       .get('chat/:id/files/:attachmentId', [controllers.Attachments, 'show'])
       .where('id', router.matchers.number())
       .where('attachmentId', router.matchers.number())
+    
+    router.get('blocks', [controllers.Blocks, 'index'])
+    router.post('blocks', [controllers.Blocks, 'store'])
+    router
+      .post('blocks/:userId/remove', [controllers.Blocks, 'destroy'])
+      .where('userId', router.matchers.number())
   })
   .use(middleware.auth())

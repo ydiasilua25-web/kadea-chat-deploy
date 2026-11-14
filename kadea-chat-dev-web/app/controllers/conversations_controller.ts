@@ -1,5 +1,6 @@
 import User from '#models/user'
 import ConversationService from '#services/conversation_service'
+import BlockService from '#services/block_service'
 import type { HttpContext } from '@adonisjs/core/http'
 import vine from '@vinejs/vine'
 
@@ -87,6 +88,11 @@ export default class ConversationsController {
     ])
     const current = conversations.find((item) => item.id === conversation.id)!
 
+    const peerId = current.isGroup ? null : current.otherUserId
+    const blockState = peerId
+      ? await new BlockService().state(me, peerId)
+      : { iBlocked: false, blockedMe: false }
+
     const members = current.isGroup ? await service.membersOf(conversation) : []
     const iAmAdmin = current.isGroup ? await service.isAdmin(me, conversation) : false
     const candidates =
@@ -109,6 +115,7 @@ export default class ConversationsController {
       candidates,
       me,
       focus: true,
+      iBlocked: blockState.iBlocked,
     })
   }
 

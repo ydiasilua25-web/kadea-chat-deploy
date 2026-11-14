@@ -1,7 +1,7 @@
 import { Transmit } from '@adonisjs/transmit-client'
 
 const COARSE = window.matchMedia('(pointer: coarse)').matches
-const LONG_PRESS_MS = 2000 // appui long sur téléphone : 2 secondes
+const LONG_PRESS_MS = 2000
 const IMAGE_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp']
 const DOC_EXT = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv']
 const EMOJIS = [
@@ -119,6 +119,19 @@ function openDialog(id) {
   return dialog
 }
 
+/* ---------- Liste des utilisateurs bloqués (fenêtre du profil) ---------- */
+async function loadBlockedList() {
+  const container = document.querySelector('[data-blocked-list]')
+  if (!container) return
+  try {
+    const response = await fetch('/blocks', { headers: { 'X-Requested-With': 'fetch' } })
+    if (!response.ok) throw new Error('Chargement impossible')
+    container.innerHTML = await response.text()
+  } catch {
+    container.textContent = 'Impossible de charger la liste.'
+  }
+}
+
 /* ---------- Boutons généraux (toutes les pages de chat) ---------- */
 document.addEventListener('click', (event) => {
   const target = event.target
@@ -154,6 +167,7 @@ document.addEventListener('click', (event) => {
   if (opener) {
     event.preventDefault()
     openDialog(opener.dataset.open)
+    if (opener.dataset.open === 'profile-dialog') loadBlockedList()
     return
   }
 

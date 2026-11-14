@@ -43,6 +43,9 @@ export type ScannedRoutes = {
     'conversations.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'conversations.status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'attachments.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'attachmentId': ParamValue} }
+    'blocks.index': { paramsTuple?: []; params?: {} }
+    'blocks.store': { paramsTuple?: []; params?: {} }
+    'blocks.destroy': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
@@ -63,6 +66,7 @@ export type ScannedRoutes = {
     'messages.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
     'conversations.status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'attachments.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'attachmentId': ParamValue} }
+    'blocks.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
@@ -83,6 +87,7 @@ export type ScannedRoutes = {
     'messages.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'messageId': ParamValue} }
     'conversations.status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'attachments.show': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'attachmentId': ParamValue} }
+    'blocks.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
     'new_account.store': { paramsTuple?: []; params?: {} }
@@ -106,6 +111,8 @@ export type ScannedRoutes = {
     'groups.add_members': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'groups.remove_member': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'userId': ParamValue} }
     'conversations.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'blocks.store': { paramsTuple?: []; params?: {} }
+    'blocks.destroy': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {
